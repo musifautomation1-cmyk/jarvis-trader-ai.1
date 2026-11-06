@@ -1444,8 +1444,16 @@ body.musif-welcome-active #musif-welcome {
   $("auth-google-signup").onclick = googleLogin;
   $("auth-google-signin").onclick = googleLogin;
 
-  $("open-dashboard").onclick = () => {
-    document.body.classList.remove("musif-welcome-active");
+ $("open-dashboard").onclick = () => {
+  document.body.classList.remove("musif-welcome-active");
+  document.body.classList.remove("musif-locked");
+
+  if (typeof window.go === "function") {
+    window.go("home");
+  }
+
+  document.getElementById("home")?.classList.add("active");
+};
   };
 
   sb.auth.onAuthStateChange((event, session) => {
