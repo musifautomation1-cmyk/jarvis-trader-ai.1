@@ -1,4 +1,4 @@
-const CACHE_NAME = "jarvis-trader-v9";
+const CACHE_NAME = "Musif-trader-v10";
 
 self.addEventListener("install", event => {
  self.skipWaiting();
