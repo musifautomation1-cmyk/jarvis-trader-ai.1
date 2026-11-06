@@ -1,4 +1,4 @@
-const CACHE_NAME = "jarvis-trader-v8";
+const CACHE_NAME = "jarvis-trader-v9";
 
 self.addEventListener("install", event => {
  self.skipWaiting();
