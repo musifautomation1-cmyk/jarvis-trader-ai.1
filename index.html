@@ -251,54 +251,173 @@ function loadChart(target){
  frame.allowFullscreen=true;el.replaceChildren(frame);
 }
 
-async function analyze(){
-  const s = document.getElementById("symbol").value;
-  const p = document.getElementById("platform").value;
-  const result = document.getElementById("analysisResult");
 
-  result.textContent = "Connecting to JARVIS live market data...";
+function jarvisEMA(values, period) {
+  if (values.length < period) return null;
+  const k = 2 / (period + 1);
+  let v = values.slice(0, period).reduce((a,b)=>a+b,0)/period;
+  for(let i=period;i<values.length;i++) v=values[i]*k+v*(1-k);
+  return v;
+}
 
-  loadChart("analysisChart");
+function jarvisRSI(values, period=14) {
+  if(values.length<=period) return null;
+  let gain=0,loss=0;
+  for(let i=1;i<=period;i++){
+    const d=values[i]-values[i-1];
+    if(d>0) gain+=d; else loss-=d;
+  }
+  gain/=period; loss/=period;
+  for(let i=period+1;i<values.length;i++){
+    const d=values[i]-values[i-1];
+    gain=(gain*(period-1)+Math.max(d,0))/period;
+    loss=(loss*(period-1)+Math.max(-d,0))/period;
+  }
+  return loss===0?100:100-100/(1+gain/loss);
+}
+
+function jarvisATR(candles, period=14) {
+  if(candles.length<=period) return null;
+  const tr=[];
+  for(let i=1;i<candles.length;i++){
+    const c=candles[i],p=candles[i-1];
+    tr.push(Math.max(c.high-c.low,Math.abs(c.high-p.close),Math.abs(c.low-p.close)));
+  }
+  return tr.slice(-period).reduce((a,b)=>a+b,0)/period;
+}
+
+function jarvisPattern(c,p) {
+  const body=Math.abs(c.close-c.open);
+  const range=c.high-c.low;
+  if(range<=0) return "Neutral";
+  const upper=c.high-Math.max(c.open,c.close);
+  const lower=Math.min(c.open,c.close)-c.low;
+
+  if(c.close>c.open && p.close<p.open && c.close>=p.open && c.open<=p.close)
+    return "Bullish Engulfing";
+  if(c.close<p.open && p.close>p.open && c.open>=p.close && c.close<=p.open)
+    return "Bearish Engulfing";
+  if(lower>body*2 && upper<body && c.close>c.open) return "Hammer";
+  if(upper>body*2 && lower<body && c.close<c.open) return "Shooting Star";
+  if(body/range<0.1) return "Doji";
+  return "No clear pattern";
+}
+
+function jarvisStructure(candles) {
+  const a=candles.slice(-21,-1);
+  const last=candles[candles.length-1];
+  const high=Math.max(...a.map(c=>c.high));
+  const low=Math.min(...a.map(c=>c.low));
+  if(last.close>high) return "Possible bullish BOS";
+  if(last.close<low) return "Possible bearish BOS";
+  if(last.high>high && last.close<high) return "Possible buy-side sweep";
+  if(last.low<low && last.close>low) return "Possible sell-side sweep";
+  return "No clear structure break";
+}
+
+async function jarvisGetCandles(symbol,interval) {
+  const url="https://jarvis-trader-api.musifautomation1.workers.dev/candles"
+    +"?symbol="+encodeURIComponent(symbol)
+    +"&interval="+interval+"&outputsize=250";
+
+  const response=await fetch(url,{cache:"no-store"});
+  const data=await response.json();
+
+  if(!response.ok || !Array.isArray(data.values))
+    throw new Error(data.error || symbol+" "+interval+" data unavailable");
+
+  const candles=data.values.map(x=>({
+    datetime:x.datetime,
+    open:Number(x.open),
+    high:Number(x.high),
+    low:Number(x.low),
+    close:Number(x.close)
+  })).filter(c=>[c.open,c.high,c.low,c.close].every(Number.isFinite));
+
+  candles.sort((a,b)=>String(a.datetime).localeCompare(String(b.datetime)));
+
+  if(candles.length<205)
+    throw new Error(symbol+" "+interval+": insufficient candles for EMA 200.");
+
+  return candles;
+}
+
+async function analyze() {
+  const symbol=document.getElementById("symbol").value;
+  const result=document.getElementById("analysisResult");
+  result.textContent="JARVIS: collecting market candles and calculating indicators...";
 
   try {
-    const api = "https://jarvis-trader-api.musifautomation1.workers.dev/candles"
-      + "?symbol=" + encodeURIComponent(s)
-      + "&interval=30min&outputsize=100";
+    const [raw30,raw5]=await Promise.all([
+      jarvisGetCandles(symbol,"30min"),
+      jarvisGetCandles(symbol,"5min")
+    ]);
 
-    const response = await fetch(api, { cache: "no-store" });
-    const data = await response.json();
+    // Exclude the newest candle because it may still be forming.
+    const c30=raw30.slice(0,-1);
+    const c5=raw5.slice(0,-1);
 
-    if (!response.ok || !Array.isArray(data.values) || !data.values.length) {
-      throw new Error(data.error || "Market data unavailable");
-    }
+    const closes=c30.map(c=>c.close);
+    const e50=jarvisEMA(closes,50);
+    const e200=jarvisEMA(closes,200);
+    const rv=jarvisRSI(closes,14);
+    const av=jarvisATR(c30,14);
 
-    const candles = data.values;
-    const latest = candles[0];
-    const previous = candles[1];
+    const last30=c30[c30.length-1];
+    const last5=c5[c5.length-1];
+    const prev5=c5[c5.length-2];
 
-    const close = Number(latest.close);
-    const previousClose = Number(previous.close);
-    const change = close - previousClose;
-    const direction = change > 0 ? "Bullish" : change < 0 ? "Bearish" : "Neutral";
+    const trend=e50>e200 && last30.close>e50 ? "BUY" :
+      e50<e200 && last30.close<e50 ? "SELL" : "UNCLEAR";
 
-    result.innerHTML =
-      "<b class='teal'>LIVE DATA RECEIVED</b><br>" +
-      "Platform: " + safe(p) + "<br>" +
-      "Market: " + safe(s) + "<br>" +
-      "Timeframe: 30 Minutes<br>" +
-      "Latest candle: " + safe(latest.datetime) + "<br>" +
-      "Open: " + Number(latest.open).toFixed(2) +
-      " | High: " + Number(latest.high).toFixed(2) +
-      "<br>Low: " + Number(latest.low).toFixed(2) +
-      " | Close: " + close.toFixed(2) +
-      "<br>Previous candle change: " + change.toFixed(2) +
-      "<br>Recent candle direction: " + direction +
-      "<br><br><b class='gold'>TRADE DECISION: WAIT</b>" +
-      "<br>Live candles received. Strategy, SMC, indicators and news confirmation are not yet automated.";
+    const pattern=jarvisPattern(last5,prev5);
+    const structure=jarvisStructure(c30);
 
-  } catch (error) {
-    result.innerHTML =
-      "<b class='red'>DATA CONNECTION ERROR</b><br>" + safe(error.message);
+    const structureBias=structure.includes("bullish") ||
+      structure.includes("sell-side") ? "BUY" :
+      structure.includes("bearish") ||
+      structure.includes("buy-side") ? "SELL" : "UNCLEAR";
+
+    const indicatorBias=trend==="BUY" && rv>50 ? "BUY" :
+      trend==="SELL" && rv<50 ? "SELL" : "MIXED";
+
+    const patternBias=["Hammer","Bullish Engulfing"].includes(pattern) ? "BUY" :
+      ["Shooting Star","Bearish Engulfing"].includes(pattern) ? "SELL" : "UNCLEAR";
+
+    const fmt=n=>n===null?"N/A":Number(n).toFixed(3);
+    const technicalAgreement=trend!=="UNCLEAR" &&
+      trend===structureBias && trend===indicatorBias;
+
+    result.innerHTML=`
+      <b class="teal">JARVIS TECHNICAL SCAN COMPLETE</b>
+      <br>Market: <b>${safe(symbol)}</b>
+      <br>Data received: 30M + 5M
+      <br>Closed 30M candles: ${c30.length}
+      <br>Closed 5M candles: ${c5.length}
+      <br><br><b>STRATEGY 01 — TREND</b>
+      <br>EMA 50: ${fmt(e50)}
+      <br>EMA 200: ${fmt(e200)}
+      <br>30M close: ${fmt(last30.close)}
+      <br>Trend: <b>${trend}</b>
+      <br><br><b>STRATEGY 02 — CANDLE CHECK</b>
+      <br>Last completed 5M pattern: ${safe(pattern)}
+      <br>Pattern direction: ${patternBias}
+      <br>5M close: ${fmt(last5.close)}
+      <br><br><b>SMC-STYLE STRUCTURE</b>
+      <br>${safe(structure)}
+      <br>Structure bias: ${structureBias}
+      <br><small>Heuristic candle analysis, not verified institutional order flow.</small>
+      <br><br><b>INDICATORS</b>
+      <br>RSI 14: ${fmt(rv)}
+      <br>ATR 14: ${fmt(av)}
+      <br>Indicator bias: ${indicatorBias}
+      <br><br><b>TECHNICAL AGREEMENT</b>
+      <br>${technicalAgreement?"Technical checks aligned":"Technical checks not aligned"}
+      <br><br><b class="gold">FINAL DECISION: WAIT</b>
+      <br>News is not automatically connected. The 5M retest, entry trigger and news clearance still require verification. No trade signal or order has been generated.
+    `;
+  } catch(error) {
+    result.innerHTML="<b class='red'>ANALYSIS ERROR</b><br>"+safe(error.message);
   }
 }
 
