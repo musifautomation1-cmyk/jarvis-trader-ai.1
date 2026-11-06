@@ -397,10 +397,39 @@ async function jarvisGetNews(symbol) {
   return data;
 }
 
-function jarvisNewsAssessment(data) {
-  const now = Number(data.server_time || Math.floor(Date.now() / 1000));
-  const events = data.events || [];
 
+function jarvisNewsAssessment(data, symbol) {
+  const now = Math.floor(Date.now() / 1000);
+  const events = Array.isArray(data?.events) ? data.events : [];
+
+  if (!data || !Array.isArray(data.events) || events.length === 0) {
+    return {
+      blocked: true,
+      caution: false,
+      unavailable: true,
+      high: [],
+      medium: [],
+      currencies: [],
+      count: 0,
+      source: "News unavailable"
+    };
+  }
+
+  const currencyMap = {
+    EURUSD: ["EUR", "USD"],
+    GBPUSD: ["GBP", "USD"],
+    GBPJPY: ["GBP", "JPY"],
+    USDJPY: ["USD", "JPY"],
+    USDCHF: ["USD", "CHF"],
+    AUDUSD: ["AUD", "USD"],
+    USDCAD: ["USD", "CAD"],
+    XAUUSD: ["USD"],
+    XAGUSD: ["USD"],
+    BTCUSD: ["USD"],
+    ETHUSD: ["USD"]
+  };
+
+  const relevant = currencyMap[symbol] || [];
   const high = [];
   const medium = [];
 
@@ -408,16 +437,17 @@ function jarvisNewsAssessment(data) {
     const ts = Number(event.ts);
     if (!Number.isFinite(ts)) continue;
 
+    const currency = String(event.currency || "").toUpperCase();
+    if (!relevant.includes(currency)) continue;
+
     const minutes = (ts - now) / 60;
     const impact = String(event.impact || "").toLowerCase();
 
-    // High impact: block 15 minutes before to 15 minutes after.
-    if (impact === "high" && minutes <= 15 && minutes >= -15) {
+    if (impact === "high" && minutes >= -30 && minutes <= 30) {
       high.push({ ...event, minutes });
     }
 
-    // Medium impact: caution 10 minutes before to 10 minutes after.
-    if (impact === "medium" && minutes <= 10 && minutes >= -10) {
+    if (impact === "medium" && minutes >= -10 && minutes <= 10) {
       medium.push({ ...event, minutes });
     }
   }
@@ -425,13 +455,15 @@ function jarvisNewsAssessment(data) {
   return {
     blocked: high.length > 0,
     caution: medium.length > 0,
+    unavailable: false,
     high,
     medium,
-    currencies: data.currencies || [],
+    currencies: relevant,
     count: events.length,
     source: data.source || "Economic Calendar"
   };
 }
+
 
 async function analyze() {
   const symbol = document.getElementById("symbol").value;
@@ -448,7 +480,9 @@ async function analyze() {
       jarvisGetNews(symbol)
     ]);
 
-    const news = jarvisNewsAssessment(newsData);
+ const news = if (news.unavailable) {
+  throw new Error("NEWS UNAVAILABLE — TRADE BLOCKED. Check economic calendar feed.");
+} jarvisNewsAssessment(newsData, symbol);
 
     const c30 = raw30.slice(0, -1);
     const c5 = raw5.slice(0, -1);
