@@ -1388,5 +1388,62 @@ body.musif-welcome-active #musif-welcome {
 
 </script>
 
-</body>
+<!-- MUSIF TRADER AI — RISK CALCULATOR -->
+<section id="riskCalculator" class="page">
+  <h2>RISK MANAGEMENT</h2>
+  <div class="card">
+    <h3 class="gold">POSITION SIZE CALCULATOR</h3>
+    <p class="muted">Calculate estimated risk before placing a manual trade.</p>
+
+    <label>Account balance ($)</label>
+    <input id="rcBalance" type="number" min="0" step="0.01" placeholder="Example: 1000">
+
+    <label>Risk per trade (%)</label>
+    <input id="rcRisk" type="number" min="0.01" max="5" step="0.01" value="1">
+
+    <label>Entry price</label>
+    <input id="rcEntry" type="number" min="0" step="0.01" placeholder="Entry price">
+
+    <label>Stop Loss price</label>
+    <input id="rcSL" type="number" min="0" step="0.01" placeholder="Stop Loss price">
+
+    <label>Contract size (units per lot)</label>
+    <input id="rcContract" type="number" min="0.01" step="0.01" value="100">
+
+    <button onclick="calculateRisk()">CALCULATE POSITION SIZE</button>
+    <div id="rcResult" class="result" style="margin-top:15px">
+      Enter your trade details to calculate estimated risk.
+    </div>
+    <p class="small">Estimate only. Confirm your Exness instrument contract size, account currency, tick value and margin before trading.</p>
+  </div>
+</section>
+
+<script>
+function calculateRisk(){
+  const balance = Number(document.getElementById("rcBalance").value);
+  const riskPct = Number(document.getElementById("rcRisk").value);
+  const entry = Number(document.getElementById("rcEntry").value);
+  const sl = Number(document.getElementById("rcSL").value);
+  const contract = Number(document.getElementById("rcContract").value);
+  const out = document.getElementById("rcResult");
+
+  if(![balance,riskPct,entry,sl,contract].every(Number.isFinite) ||
+     balance<=0 || riskPct<=0 || riskPct>5 ||
+     entry<=0 || sl<=0 || contract<=0 || entry===sl){
+    out.textContent="Please enter valid values. Risk must be above 0% and no more than 5%.";
+    return;
+  }
+
+  const riskAmount = balance*riskPct/100;
+  const priceDistance = Math.abs(entry-sl);
+  const estimatedLots = riskAmount/(priceDistance*contract);
+
+  out.innerHTML =
+    "<b class='gold'>RISK CALCULATION</b><br>" +
+    "Money at risk: <b>$"+riskAmount.toFixed(2)+"</b><br>" +
+    "Entry-to-SL distance: <b>"+priceDistance.toFixed(3)+"</b><br>" +
+    "Estimated position size: <b>"+estimatedLots.toFixed(3)+" lots</b><br>" +
+    "<small>Do not use this lot size until the contract-size and account-currency assumptions are verified for your exact Exness symbol.</small>";
+}
+</script></body>
 </html>
