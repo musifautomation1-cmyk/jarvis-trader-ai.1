@@ -1449,18 +1449,13 @@ $("open-dashboard").onclick = () => {
   window.go("home");
 };
 
-  sb.auth.onAuthStateChange((event, session) => {
-    if (session && isGoogleUser(session)) {
-      showWelcome();
-    } else {
-      lockApp();
-
-      if (session) {
-        setTimeout(() => sb.auth.signOut(), 0);
-      }
-    }
-  });
-
+sb.auth.onAuthStateChange((event, session) => {
+  if (session && isGoogleUser(session)) {
+    showWelcome();
+  } else if (!session) {
+    lockApp();
+  }
+});
   const { data, error } = await sb.auth.getSession();
 
   if (error) {
