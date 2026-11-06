@@ -809,5 +809,245 @@ document.getElementById("watchlist").innerHTML=symbols.map(s=>"<tr><td><b>"+s+"<
 loadChart("homeChart");renderTrades();
 if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
+
+<style>
+/* JARVIS premium dashboard */
+:root{
+ --bg:#070b12;--panel:#101925;--panel2:#152333;
+ --line:#26384b;--text:#f1f6ff;--muted:#91a0b5;
+ --teal:#52e0c0;--red:#ff647c;--gold:#f5c76b;
+}
+body{background:radial-gradient(ellipse at 50% -15%,#183b48 0%,#070b12 52%);font-family:Arial,sans-serif}
+header{backdrop-filter:blur(16px);background:#080e17ee;border-bottom-color:#26394b}
+.brand{font-size:21px;letter-spacing:1.5px}
+.status{background:#10251f;color:#65e8b1;border-color:#235c48}
+main{max-width:920px;padding:18px}
+.card{background:linear-gradient(145deg,#121e2c,#0d1621);border-color:#25384b;box-shadow:0 12px 32px #0003;border-radius:18px}
+.hero{background:radial-gradient(circle at 90% 0%,#1d665d 0%,transparent 38%),linear-gradient(130deg,#102b35,#101925 65%);border-color:#28665c;padding:25px}
+.hero h2{font-size:clamp(27px,5vw,38px);line-height:1.12}
+.metric{background:#0b1420;border-color:#24384b;border-radius:14px}
+.result{background:#0b1420;border-color:#293c50;border-radius:14px}
+.chart{border:1px solid #26384b}
+nav{background:#09111cf5;backdrop-filter:blur(16px);border-top-color:#26384b}
+nav button.active{color:#60e8c5}
+.signal-card{padding:19px;border-radius:18px;margin-top:15px;background:#0b1520;border:1px solid #80652c}
+.signal-card.buy{border-color:#218957;background:linear-gradient(145deg,#0d2b20,#0b1520 72%)}
+.signal-card.sell{border-color:#a83d55;background:linear-gradient(145deg,#321722,#0b1520 72%)}
+.signal-card.wait{border-color:#8a6b2a;background:linear-gradient(145deg,#302512,#0b1520 72%)}
+.signal-word{font-size:clamp(38px,9vw,52px);font-weight:950;letter-spacing:1px;margin:9px 0}
+.signal-card.buy .signal-word{color:#4be39a}
+.signal-card.sell .signal-word{color:#ff6b82}
+.signal-card.wait .signal-word{color:#ffd16d}
+.signal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0}
+.signal-cell{padding:11px;border:1px solid #ffffff14;background:#ffffff08;border-radius:12px;min-width:0}
+.signal-cell small{display:block;color:#9eafc2;font-size:10px;letter-spacing:.8px;margin-bottom:5px}
+.signal-cell b{font-size:13px;overflow-wrap:anywhere}
+.signal-details{margin-top:13px;border-top:1px solid #ffffff20;padding-top:10px}
+.signal-details summary{cursor:pointer;color:#a9c5d5;font-weight:700;padding:7px 0}
+.signal-details .detail-body{font-size:12px;line-height:1.8;color:#d1dbe6;padding-top:8px}
+.signal-note{font-size:12px;color:#bdc9d7;line-height:1.6}
+#pwaInstall{display:none;margin-left:8px;padding:8px 10px;font-size:11px}
+@media(max-width:520px){
+ main{padding:11px}.hero{padding:20px}
+ .signal-card{padding:14px}.signal-grid{gap:7px}
+ .signal-cell{padding:9px}
+}
+</style>
+
+<script>
+(function(){
+
+/* Header status */
+const status=document.querySelector("header .status");
+if(status) status.textContent="● ANALYSIS ONLY";
+
+/* Home dashboard upgrade */
+const home=document.getElementById("home");
+if(home){
+ const hero=home.querySelector(".hero");
+ if(hero){
+  hero.querySelector(".small").textContent="PERSONAL TRADING INTELLIGENCE";
+  hero.querySelector("h2").innerHTML="JARVIS TRADER AI";
+  hero.querySelector("p").textContent=
+   "One strategy engine. Four confirmations. Clear manual trade decisions.";
+ }
+ const overview=home.querySelector(".row h3");
+ if(overview) overview.textContent="TRADING DASHBOARD";
+}
+
+/* News page information */
+const newsPage=document.getElementById("news");
+if(newsPage){
+ newsPage.innerHTML=`
+ <h2>NEWS PROTECTION</h2>
+ <div class="card">
+  <h3 class="teal">AUTOMATIC ECONOMIC CALENDAR CHECK</h3>
+  <p class="muted">JARVIS checks relevant currency events every time you run analysis.</p>
+  <div class="result">
+   <b class="red">HIGH IMPACT</b>
+   <p>New entries blocked inside the configured protection window.</p>
+   <b class="gold">MEDIUM IMPACT</b>
+   <p>WAIT / CAUTION while the event is close.</p>
+   <b>NEWS DATA UNAVAILABLE</b>
+   <p>JARVIS returns WAIT instead of assuming conditions are safe.</p>
+  </div>
+  <p class="disclaimer">News feed: connected economic calendar service. Verify important release times independently.</p>
+  <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">
+   OPEN FOREX FACTORY ↗
+  </a>
+ </div>`;
+}
+
+/* Turn the existing detailed analysis into one clear signal box */
+const originalAnalyze=window.analyze;
+
+if(typeof originalAnalyze==="function"){
+ window.analyze=async function(){
+
+  const result=document.getElementById("analysisResult");
+  const button=document.querySelector('#analyze button[onclick="analyze()"]');
+
+  if(button){
+   button.disabled=true;
+   button.textContent="ANALYSING MARKET...";
+  }
+
+  try{
+   await originalAnalyze();
+  }finally{
+   if(button){
+    button.disabled=false;
+    button.textContent="✦ RUN JARVIS AI ANALYSIS";
+   }
+  }
+
+  if(!result) return;
+
+  const oldHTML=result.innerHTML;
+  const temp=document.createElement("div");
+  temp.innerHTML=oldHTML;
+
+  const raw=temp.innerText||temp.textContent||"";
+  const lines=raw.split(/\n/).map(x=>x.trim()).filter(Boolean);
+
+  const decisionMatch=raw.match(/FINAL DECISION:\s*(BUY|SELL|WAIT)/i);
+  const decision=decisionMatch?decisionMatch[1].toUpperCase():"WAIT";
+
+  function getLine(label){
+   const line=lines.find(x=>x.toLowerCase().startsWith(label.toLowerCase()));
+   return line?line.slice(label.length).replace(/^:\s*/,"").trim():"N/A";
+  }
+
+  const entry=getLine("Entry reference");
+  const sl=getLine("Stop Loss");
+  const tp1=getLine("Take Profit 1 (1:1)");
+  const tp2=getLine("Take Profit 2 (1:2)");
+  const tp3=getLine("Take Profit 3 (1:3)");
+
+  const nextRaw=getLine("Next 5M candle close");
+  let nextTime=nextRaw;
+
+  /* Existing analysis timestamp is one candle early.
+     Add 5 minutes to show the next complete 5M close. */
+  if(nextRaw && nextRaw!=="Check next 5M candle close"){
+   const parsed=new Date(nextRaw);
+   if(Number.isFinite(parsed.getTime())){
+    parsed.setMinutes(parsed.getMinutes()+5);
+    nextTime=parsed.toLocaleString();
+   }
+  }
+
+  const newsBlocked=raw.includes("HIGH IMPACT — NO TRADE");
+  const newsCaution=raw.includes("MEDIUM IMPACT — CAUTION");
+  const newsStatus=newsBlocked?"HIGH IMPACT — BLOCKED":
+   newsCaution?"MEDIUM — CAUTION":"CLEAR IN CHECKED WINDOW";
+
+  const decisionIndex=lines.findIndex(x=>x.includes("FINAL DECISION:"));
+  const reason=decisionIndex>=0?(lines[decisionIndex+1]||"Check details below"):"Analysis incomplete.";
+
+  const action=decision==="WAIT"
+   ? "WAIT. Next check after the next complete 5M candle closes at "+(nextTime||"the next 5M close")+". If news is blocked, stay out until the protection window clears."
+   : "The latest closed 5M candle confirmed the setup. Verify the current broker price and spread before any manual entry.";
+
+  const platform=document.getElementById("platform")?.value||"Selected platform";
+  const symbol=document.getElementById("symbol")?.value||"Selected market";
+
+  result.innerHTML=`
+   <div class="signal-card ${decision.toLowerCase()}">
+    <div class="row">
+     <b>JARVIS FINAL SIGNAL</b>
+     <span class="small">${platform} · ${symbol}</span>
+    </div>
+
+    <div class="signal-word">${decision}</div>
+    <div class="signal-note">${reason}</div>
+
+    <div class="signal-grid">
+     <div class="signal-cell">
+      <small>SETUP TIMEFRAME</small><b>30 MINUTES (30M)</b>
+     </div>
+     <div class="signal-cell">
+      <small>ENTRY TIMEFRAME</small><b>5 MINUTES (5M)</b>
+     </div>
+     <div class="signal-cell">
+      <small>ENTRY REFERENCE</small><b>${entry}</b>
+     </div>
+     <div class="signal-cell">
+      <small>STOP LOSS</small><b>${sl}</b>
+     </div>
+     <div class="signal-cell">
+      <small>TAKE PROFIT 1 · 1R</small><b>${tp1}</b>
+     </div>
+     <div class="signal-cell">
+      <small>TAKE PROFIT 2 · 2R</small><b>${tp2}</b>
+     </div>
+     <div class="signal-cell">
+      <small>TAKE PROFIT 3 · 3R</small><b>${tp3}</b>
+     </div>
+     <div class="signal-cell">
+      <small>NEWS FILTER</small><b>${newsStatus}</b>
+     </div>
+    </div>
+
+    <div class="signal-note">
+     <b>WHEN TO ACT:</b><br>${action}
+    </div>
+
+    <details class="signal-details">
+     <summary>VIEW FULL AI ANALYSIS · 4 STEPS · SMC · INDICATORS · NEWS</summary>
+     <div class="detail-body">${oldHTML}</div>
+    </details>
+   </div>`;
+ };
+}
+
+/* Optional install button when browser supports PWA installation */
+const header=document.querySelector("header");
+if(header && !document.getElementById("pwaInstall")){
+ const install=document.createElement("button");
+ install.id="pwaInstall";
+ install.textContent="INSTALL";
+ install.className="secondary";
+ header.appendChild(install);
+
+ let installPrompt=null;
+
+ window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  installPrompt=event;
+  install.style.display="inline-block";
+ });
+
+ install.addEventListener("click",async()=>{
+  if(!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt=null;
+  install.style.display="none";
+ });
+}
+
+})();
+</script>
 </body>
 </html>
