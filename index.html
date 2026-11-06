@@ -1213,5 +1213,142 @@ a{color:#eac66e!important}
  });
 })();
 </script>
+
+<!-- MUSIF TRADER AI SUPABASE AUTH -->
+<style>
+#musif-auth {
+  position:fixed;inset:0;z-index:99999;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;background:#050608;
+}
+body.musif-locked main,
+body.musif-locked header,
+body.musif-locked nav {display:none!important}
+body.musif-locked #musif-auth {display:flex}
+.auth-card {
+  width:min(100%,420px);padding:25px;
+  border:1px solid #b58a3b;border-radius:18px;
+  background:#11100c;color:#f5d98b;
+}
+.auth-card h2{text-align:center}
+.auth-card input {
+  width:100%;padding:13px;margin:7px 0;
+  border:1px solid #725522;border-radius:9px;
+  background:#080a0d;color:white;
+}
+.auth-card button {
+  width:100%;padding:13px;margin-top:9px;
+  border-radius:9px;font-weight:bold;
+}
+#auth-message {font-size:12px;white-space:pre-wrap;margin-top:12px}
+</style>
+
+<div id="musif-auth">
+ <div class="auth-card">
+  <h2>♛ MUSIF TRADER AI</h2>
+  <p>Secure account access</p>
+  <input id="auth-name" placeholder="Full name (signup only)">
+  <input id="auth-email" type="email" placeholder="Email address">
+  <input id="auth-password" type="password" placeholder="Password">
+  <button id="auth-login">SIGN IN</button>
+  <button id="auth-signup">CREATE ACCOUNT</button>
+  <button id="auth-google" class="secondary">CONTINUE WITH GOOGLE</button>
+  <button id="auth-reset" class="secondary">FORGOT PASSWORD</button>
+  <div id="auth-message"></div>
+ </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(async function(){
+ const URL="https://khbdnkiqkbwnkyzvhnmn.supabase.co";
+ const KEY="sb_publishable_F_5G8ePwYmV0MODmaEY9OQ_bE_8CvXJ";
+ const message=document.getElementById("auth-message");
+ const email=()=>document.getElementById("auth-email").value.trim();
+ const password=()=>document.getElementById("auth-password").value;
+ const say=t=>message.textContent=t;
+
+ document.body.classList.add("musif-locked");
+
+ if(!window.supabase){
+  say("Login service unavailable. Refresh the page.");
+  return;
+ }
+
+ const sb=window.supabase.createClient(URL,KEY);
+
+ function showApp(session){
+  document.body.classList.toggle("musif-locked",!session);
+  if(session){
+   let b=document.getElementById("musif-logout");
+   if(!b){
+    b=document.createElement("button");
+    b.id="musif-logout";
+    b.textContent="LOG OUT";
+    b.className="secondary";
+    b.style.marginLeft="10px";
+    document.querySelector("header").appendChild(b);
+    b.onclick=async()=>{await sb.auth.signOut()};
+   }
+  }
+ }
+
+ document.getElementById("auth-login").onclick=async()=>{
+  if(!email()||!password())return say("Enter email and password.");
+  say("Signing in...");
+  const {data,error}=await sb.auth.signInWithPassword({
+   email:email(),password:password()
+  });
+  if(error)return say(error.message);
+  showApp(data.session);
+  say("");
+ };
+
+ document.getElementById("auth-signup").onclick=async()=>{
+  if(!email()||password().length<8)
+   return say("Enter email and password (minimum 8 characters).");
+  say("Creating account...");
+  const {data,error}=await sb.auth.signUp({
+   email:email(),
+   password:password(),
+   options:{data:{
+    full_name:document.getElementById("auth-name").value.trim()
+   }}
+  });
+  if(error)return say(error.message);
+  if(data.session){
+   showApp(data.session);
+   say("Account created.");
+  }else{
+   say("Check your email to confirm your account, then sign in.");
+  }
+ };
+
+ document.getElementById("auth-google").onclick=async()=>{
+  say("Opening Google login...");
+  const {error}=await sb.auth.signInWithOAuth({
+   provider:"google",
+   options:{redirectTo:location.href}
+  });
+  if(error)say(error.message);
+ };
+
+ document.getElementById("auth-reset").onclick=async()=>{
+  if(!email())return say("Enter your email first.");
+  say("Sending reset email...");
+  const {error}=await sb.auth.resetPasswordForEmail(email(),{
+   redirectTo:location.href
+  });
+  say(error?error.message:"Check your email for the reset link.");
+ };
+
+ sb.auth.onAuthStateChange((_event,session)=>showApp(session));
+ const {data,error}=await sb.auth.getSession();
+ if(error)say(error.message);
+ else showApp(data.session);
+})();
+</script>
+</body>
+</html>
 </body>
 </html>
