@@ -80,71 +80,51 @@ a{color:var(--teal)}
  </div>
 </section>
 
+
 <section id="analyze" class="page">
- <h2>AI Market Analysis</h2><p class="muted">Review both installed strategies before preparing a trade.</p>
- <div class="card">
-  <label>Trading platform</label>
-  <select id="platform" onchange="document.getElementById('homePlatform').textContent=this.value">
-   <option>Exness</option><option>MetaTrader 5 (MT5)</option>
-  </select>
-  <label>Market instrument</label>
-  <select id="symbol" onchange="loadChart()">
-  <option>BTCUSD</option>
-<option value="XAGUSD">XAGUSD</option><option>ETHUSD</option> <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>GBPJPY</option><option>USDJPY</option><option>USDCHF</option><option>AUDUSD</option><option>USDCAD</option>
-  </select>
-  <label>Market timeframe</label>
-  <select id="timeframe"><option>30M → 5M</option><option>1H → 15M</option><option>4H → 1H</option><option>15M → 5M</option></select>
-  <button class="full" onclick="analyze()">✦ RUN FULL AI ANALYSIS</button>
-  <div id="analysisResult" class="result">Waiting for your market review. No live AI signal has been generated.</div>
- </div>
- <div class="card">
-  <h3>Strategy 01 — XAUUSD Retracement</h3>
-  <p class="small">30M trend → swing levels → 50% midpoint → 5M retest.</p>
-  <h3>Strategy 02 — Candlestick Confirmation</h3>
-  <p class="small">Manual pattern identification and candle-close confirmation.</p>
- </div>
-<div class="card">
-<h3>03 — TRIPLE CONFIRMATION ENGINE</h3>
-<p class="small">Strategy + Smart Money + Indicators</p>
+  <h2>JARVIS AI — ONE STRATEGY ENGINE</h2>
+  <p class="muted">One strategy. Four steps. Automatic AI confirmation.</p>
 
-<label>SMC Structure (BOS / CHOCH)</label>
-<select id="smcBias">
-<option value="unknown">Not checked</option>
-<option value="BUY">Bullish</option>
-<option value="SELL">Bearish</option>
-<option value="mixed">Mixed / unclear</option>
-</select>
+  <div class="card">
+    <label>Trading platform</label>
+    <select id="platform" onchange="document.getElementById('homePlatform').textContent=this.value">
+      <option>Exness</option>
+    </select>
 
-<label>Liquidity sweep + Order Block / FVG</label>
-<select id="smcConfirm">
-<option value="no">Not confirmed</option>
-<option value="yes">Confirmed</option>
-</select>
+    <label>Market instrument</label>
+    <select id="symbol" onchange="loadChart()">
+      <option>BTCUSD</option>
+      <option value="XAGUSD">XAGUSD</option>
+      <option>ETHUSD</option>
+      <option value="XAUUSD">XAUUSD</option>
+      <option>EURUSD</option>
+      <option>GBPUSD</option>
+      <option>GBPJPY</option>
+      <option>USDJPY</option>
+      <option>USDCHF</option>
+      <option>AUDUSD</option>
+      <option>USDCAD</option>
+    </select>
 
-<label>EMA 50/200 + RSI + Volume direction</label>
-<select id="indicatorBias">
-<option value="unknown">Not checked</option>
-<option value="BUY">Bullish</option>
-<option value="SELL">Bearish</option>
-<option value="mixed">Mixed / unclear</option>
-</select>
+    <div class="result">
+      <b>MUSIF'S 4-STEP AI STRATEGY</b><br>
+      1. 30M Trend & Market Structure<br>
+      2. Swing, 50% Midpoint & 75-Point Zone<br>
+      3. 5M Retest Confirmation<br>
+      4. Closed Candlestick Confirmation<br><br>
+      <b>Automatic checks:</b> SMC, EMA 50/200, RSI, ATR, Volume and Economic News.
+    </div>
 
-<label>At least 2 indicators agree?</label>
-<select id="indicatorConfirm">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
+    <button class="full" onclick="analyze()">✦ RUN JARVIS AI ANALYSIS</button>
+    <div id="analysisResult" class="result">
+      Select a market and run analysis.
+    </div>
+  </div>
 
-<label>High-impact news risk</label>
-<select id="newsRisk">
-<option value="unknown">Not checked</option>
-<option value="clear">No major event near entry</option>
-<option value="high">High-impact news imminent</option>
-</select>
-
-<button class="full" onclick="runTripleCheck()">RUN TRIPLE CONFIRMATION</button>
-<div id="tripleResult" class="result">Waiting for chart observations.</div>
-</div> <div class="card"><h3>Market chart</h3><div id="analysisChart" class="chart"></div></div>
+  <div class="card">
+    <h3>Live Market Chart</h3>
+    <div id="analysisChart" class="chart"></div>
+  </div>
 </section>
 
 <section id="markets" class="page">
