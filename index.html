@@ -89,7 +89,8 @@ a{color:var(--teal)}
   </select>
   <label>Market instrument</label>
   <select id="symbol" onchange="loadChart()">
-   <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>GBPJPY</option><option>USDJPY</option><option>USDCHF</option><option>AUDUSD</option><option>USDCAD</option>
+  <option>BTCUSD</option>
+<option>ETHUSD</option> <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>GBPJPY</option><option>USDJPY</option><option>USDCHF</option><option>AUDUSD</option><option>USDCAD</option>
   </select>
   <label>Market timeframe</label>
   <select id="timeframe"><option>30M → 5M</option><option>1H → 15M</option><option>4H → 1H</option><option>15M → 5M</option></select>
@@ -222,7 +223,7 @@ a{color:var(--teal)}
 </nav>
 
 <script>
-const symbols=["XAUUSD","EURUSD","GBPUSD","GBPJPY","USDJPY","USDCHF","AUDUSD","USDCAD"];
+const symbols=["XAUUSD","BTCUSD","ETHUSD","EURUSD","GBPUSD","GBPJPY","USDJPY","USDCHF","AUDUSD","USDCAD"];
 function go(id){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  document.getElementById(id).classList.add("active");
@@ -233,7 +234,10 @@ function go(id){
  if(id==="journal")renderTrades();
 }
 function tvSymbol(s){
- return s==="XAUUSD"?"OANDA:XAUUSD":"FX:"+s;
+ if(s==="XAUUSD") return "OANDA:XAUUSD";
+ if(s==="BTCUSD") return "COINBASE:BTCUSD";
+ if(s==="ETHUSD") return "COINBASE:ETHUSD";
+ return "FX:"+s;
 }
 function loadChart(target){
  const s=document.getElementById("symbol")?.value||"XAUUSD";
