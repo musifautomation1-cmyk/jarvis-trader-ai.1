@@ -1,4 +1,4 @@
-const CACHE_NAME = "Musif-trader-v10";
+const CACHE_NAME = "Musif-trader-v11";
 
 self.addEventListener("install", event => {
  self.skipWaiting();
