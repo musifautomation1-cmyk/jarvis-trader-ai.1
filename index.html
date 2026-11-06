@@ -660,7 +660,7 @@ async function analyze() {
         : "<b class='teal'>No high/medium event in protection window</b>";
 
     const nextClose = new Date(
-      new Date(last5.datetime).getTime() + 10 * 60 * 1000
+     new Date(last5.datetime).getTime() + 5 * 60 * 1000
     );
 
     const nextCloseText = Number.isFinite(nextClose.getTime())
