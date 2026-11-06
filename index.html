@@ -224,11 +224,16 @@ function loadChart(target){
  const s=document.getElementById("symbol")?.value||"XAUUSD";
  const el=document.getElementById(target||"analysisChart");
  if(!el)return;
+
+ const interval=document.getElementById("chartTimeframe")?.value||"30";
  const frame=document.createElement("iframe");
- frame.title="TradingView "+s;
- frame.src="https://s.tradingview.com/widgetembed/?symbol="+encodeURIComponent(tvSymbol(s))+"&interval=30&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=0b1218&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1";
+
+ frame.title="TradingView "+s+" "+interval+"m";
+ frame.src="https://s.tradingview.com/widgetembed/?symbol="+encodeURIComponent(tvSymbol(s))+"&interval="+encodeURIComponent(interval)+"&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=0b1218&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1";
+
  frame.style="width:100%;height:100%;border:0";
- frame.allowFullscreen=true;el.replaceChildren(frame);
+ frame.allowFullscreen=true;
+ el.replaceChildren(frame);
 }
 
 
