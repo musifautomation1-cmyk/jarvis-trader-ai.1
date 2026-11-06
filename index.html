@@ -137,7 +137,7 @@ a{color:var(--teal)}
 <div id="analysisChart" class="chart"></div>
 
 <p class="disclaimer">
-TradingView display chart. JARVIS analysis uses Twelve Data, not direct Exness prices.
+TradingView display chart. JARVIS analysis uses Twelve Data, not a direct Exness or MT5 broker feed.
 </p>
   </div>
 </section>
@@ -151,38 +151,25 @@ TradingView display chart. JARVIS analysis uses Twelve Data, not direct Exness p
 </section>
 
 <section id="strategy" class="page">
- <h2>Strategy Centre</h2>
- <div class="card">
-  <h3>01 — XAUUSD 30M → 5M</h3>
-  <p class="small">Enter the swing high and swing low from your chart.</p>
-  <label>Swing high</label><input id="high" type="number" step="0.01" placeholder="e.g. 2750.00">
-  <label>Swing low</label><input id="low" type="number" step="0.01" placeholder="e.g. 2720.00">
-  <label>75-point distance (price units)</label><input id="points" type="number" value="0.75" step="0.01">
-  <p class="disclaimer">0.75 is a provisional interpretation for two-decimal XAUUSD pricing. Verify your Exness symbol's point/tick specification before using it.</p>
-  <button class="full" onclick="levels()">CALCULATE LEVELS</button>
-  <div id="levelsResult" class="result">Your 50% midpoint and inward levels will appear here.</div>
-  <label>30M trend</label><select id="trend"><option value="">Select direction</option><option>BUY — Higher High + Higher Low</option><option>SELL — Lower High + Lower Low</option><option>Unclear — No trade</option></select>
-  <label>5M confirmation</label><select id="confirm"><option>Not confirmed</option><option>Bullish close + retest (BUY)</option><option>Bearish close + retest (SELL)</option></select>
- </div>
- <div class="card">
-  <h3>02 — Candlestick checklist</h3>
-  <label>Pattern seen on chart</label>
-  <select id="pattern">
-   <option>Select pattern</option><optgroup label="Bullish">
-   <option>Hammer</option><option>Inverted Hammer</option><option>Morning Star</option><option>Bullish Engulfing</option><option>Piercing Line</option><option>Three White Soldiers</option>
-   </optgroup><optgroup label="Bearish">
-   <option>Shooting Star</option><option>Hanging Man</option><option>Evening Star</option><option>Bearish Engulfing</option><option>Dark Cloud Cover</option><option>Three Black Crows</option>
-   </optgroup><optgroup label="Neutral">
-   <option>Doji</option><option>Spinning Top</option><option>Marubozu</option>
-   </optgroup></select>
-  <div class="check"><input id="atLevel" type="checkbox"><span>Pattern appears at a meaningful support/resistance area</span></div>
-  <div class="check"><input id="closed" type="checkbox"><span>Pattern candle has closed</span></div>
-  <div class="check"><input id="newsChecked" type="checkbox"><span>News risk checked separately</span></div>
-  <button class="full" onclick="patternCheck()">CHECK PATTERN</button>
-  <div id="patternResult" class="result">Waiting for manual chart confirmation.</div>
- </div>
-</section>
+  <h2>JARVIS — Strategy Centre</h2>
 
+  <div class="card">
+    <h3>ONE COMBINED STRATEGY</h3>
+    <p>Musif's 4-step 30M → 5M trading strategy.</p>
+
+    <div class="result">
+      <b>STEP 1</b> — 30M trend: HH + HL BUY / LH + LL SELL<br><br>
+      <b>STEP 2</b> — Swing retracement, 50% midpoint and inward 75-point zone<br><br>
+      <b>STEP 3</b> — 5M retest<br><br>
+      <b>STEP 4</b> — Closed bullish/bearish candle confirmation
+    </div>
+
+    <p>Automatic supporting checks: SMC, EMA 50/200, RSI, ATR and economic news.</p>
+    <p class="disclaimer">JARVIS analyses only. You manually execute trades on Exness or MT5. No automatic orders.</p>
+
+    <button class="full" onclick="go('analyze')">RUN THE ONE STRATEGY</button>
+  </div>
+</section>
 <section id="news" class="page">
  <h2>News & Economic Calendar</h2>
  <div class="card">
@@ -472,7 +459,7 @@ async function analyze() {
   const platform = document.getElementById("platform").value;
   const result = document.getElementById("analysisResult");
 
-  result.innerHTML = "JARVIS is checking the 4-step strategy, SMC, indicators and news...";
+  result.innerHTML = "JARVIS is analysing all 4 steps, indicators and news...";
 
   try {
     const [raw30, raw5, newsData] = await Promise.all([
@@ -482,196 +469,199 @@ async function analyze() {
     ]);
 
     const news = jarvisNewsAssessment(newsData, symbol);
-
-    if (news.unavailable) {
-      throw new Error("Economic news could not be verified. No trade signal.");
-    }
+    if (news.unavailable) throw new Error("News verification unavailable. WAIT.");
 
     const c30 = raw30.slice(0, -1);
     const c5 = raw5.slice(0, -1);
 
-    if (c30.length < 205 || c5.length < 30) {
-      throw new Error("Not enough closed candles for reliable analysis.");
-    }
+    if (c30.length < 205 || c5.length < 30)
+      throw new Error("Not enough closed candles.");
 
-    const last30 = c30[c30.length - 1];
-    const last5 = c5[c5.length - 1];
-    const prev5 = c5[c5.length - 2];
+    const last30 = c30.at(-1);
+    const last5 = c5.at(-1);
+    const prev5 = c5.at(-2);
 
     const closes = c30.map(c => c.close);
     const ema50 = jarvisEMA(closes, 50);
     const ema200 = jarvisEMA(closes, 200);
     const rsi = jarvisRSI(closes, 14);
     const atr = jarvisATR(c30, 14);
+    const atr5 = jarvisATR(c5, 14);
 
     const swing = jarvisSwingBias(c30);
-    const pivots = swing.pivots;
-    const hp = pivots.highs.slice(-1)[0];
-    const lp = pivots.lows.slice(-1)[0];
-
     const trend = swing.bias;
+    const hp = swing.pivots.highs.at(-1);
+    const lp = swing.pivots.lows.at(-1);
 
-    // STEP 1 — 30M trend and market structure.
+    // STEP 1 — 30M trend
     const emaDirection =
       ema50 > ema200 && last30.close > ema50 ? "BUY" :
       ema50 < ema200 && last30.close < ema50 ? "SELL" :
       "UNCLEAR";
 
-    const step1 =
-      trend !== "UNCLEAR" && trend === emaDirection;
+    const step1 = trend !== "UNCLEAR" && trend === emaDirection;
 
-    // STEP 2 — Swing, 50% midpoint and inward 75-point zone.
+    // STEP 2 — 50% midpoint and inward zone
     const pointBuffer =
       symbol.includes("JPY") ? 0.075 :
-      ["EURUSD", "GBPUSD", "GBPJPY", "USDJPY",
-       "USDCHF", "AUDUSD", "USDCAD"].includes(symbol) ? 0.00075 :
-      0.75;
+      ["EURUSD","GBPUSD","GBPJPY","USDJPY","USDCHF","AUDUSD","USDCAD"].includes(symbol)
+        ? 0.00075 : 0.75;
 
     let midpoint = null;
     let upperZone = null;
     let lowerZone = null;
     let inZone = false;
     let correctSwing = false;
-    let step2 = false;
 
-    if (hp && lp && trend !== "UNCLEAR") {
-      const range = hp.price - lp.price;
+    if (hp && lp) {
       midpoint = (hp.price + lp.price) / 2;
       upperZone = hp.price - pointBuffer;
       lowerZone = lp.price + pointBuffer;
 
       correctSwing = trend === "BUY"
         ? lp.index < hp.index
-        : hp.index < lp.index;
+        : trend === "SELL"
+          ? hp.index < lp.index
+          : false;
 
       inZone =
-        range > pointBuffer * 2 &&
+        hp.price - lp.price > pointBuffer * 2 &&
         last5.close >= lowerZone &&
         last5.close <= upperZone;
-
-      const midpointClose = trend === "BUY"
-        ? last5.close > midpoint
-        : last5.close < midpoint;
-
-      step2 = correctSwing && inZone && midpointClose;
     }
 
-    // STEP 3 — 5M retest of the midpoint.
-    const tolerance = Math.max(
-      (jarvisATR(c5, 14) || 0) * 0.25,
-      pointBuffer * 0.1
-    );
+    const midpointClose =
+      trend === "BUY" ? last5.close > midpoint :
+      trend === "SELL" ? last5.close < midpoint : false;
 
-    const retest = midpoint !== null && (
+    const step2 =
+      midpoint !== null && correctSwing && inZone && midpointClose;
+
+    // STEP 3 — 5M retest
+    const tolerance = Math.max((atr5 || 0) * 0.25, pointBuffer * 0.1);
+
+    const step3 = midpoint !== null && (
       trend === "BUY"
-        ? prev5.low <= midpoint + tolerance &&
-          last5.close > midpoint
+        ? prev5.low <= midpoint + tolerance && last5.close > midpoint
         : trend === "SELL"
-          ? prev5.high >= midpoint - tolerance &&
-            last5.close < midpoint
+          ? prev5.high >= midpoint - tolerance && last5.close < midpoint
           : false
     );
 
-    // STEP 4 — Closed candle confirmation.
+    // STEP 4 — closed candle confirmation
     const pattern = jarvisPattern(last5, prev5);
-
-    const bullishPattern = [
-      "Hammer",
-      "Bullish Engulfing"
-    ].includes(pattern);
-
-    const bearishPattern = [
-      "Shooting Star",
-      "Bearish Engulfing"
-    ].includes(pattern);
 
     const candleDirection =
       last5.close > last5.open ? "BUY" :
-      last5.close < last5.open ? "SELL" :
-      "UNCLEAR";
+      last5.close < last5.open ? "SELL" : "UNCLEAR";
 
-    const candleConfirm = trend === "BUY"
+    const bullishPattern = ["Hammer","Bullish Engulfing"].includes(pattern);
+    const bearishPattern = ["Shooting Star","Bearish Engulfing"].includes(pattern);
+
+    const step4 = trend === "BUY"
       ? candleDirection === "BUY" && bullishPattern
       : trend === "SELL"
         ? candleDirection === "SELL" && bearishPattern
         : false;
 
-    const step3 = retest;
-    const step4 = candleConfirm;
-
-    // Automatic SMC supporting check.
+    // AUTOMATIC SMC CHECK
     const structure = jarvisStructure(c30);
 
     const smcBias =
-      structure.includes("bullish") ||
-      structure.includes("sell-side") ? "BUY" :
-      structure.includes("bearish") ||
-      structure.includes("buy-side") ? "SELL" :
+      structure.includes("bullish") || structure.includes("sell-side") ? "BUY" :
+      structure.includes("bearish") || structure.includes("buy-side") ? "SELL" :
       "UNCLEAR";
 
     const smcConflict =
-      smcBias !== "UNCLEAR" && trend !== "UNCLEAR" &&
+      smcBias !== "UNCLEAR" &&
+      trend !== "UNCLEAR" &&
       smcBias !== trend;
 
-    // Automatic indicator supporting check.
+    // INDICATORS
     const indicatorBias =
       emaDirection === "BUY" && rsi > 50 ? "BUY" :
-      emaDirection === "SELL" && rsi < 50 ? "SELL" :
-      "UNCLEAR";
+      emaDirection === "SELL" && rsi < 50 ? "SELL" : "UNCLEAR";
 
     const indicatorConfirm =
       indicatorBias === trend && trend !== "UNCLEAR";
 
-    // Volume: only assess if the data provider supplies volume.
-    const volumes = c5
-      .slice(-21, -1)
+    // VOLUME — informational only if feed does not provide it
+    const volumes = c5.slice(-21, -1)
       .map(c => c.volume)
       .filter(v => Number.isFinite(v) && v > 0);
 
     const lastVolume = last5.volume;
     const avgVolume = volumes.length
-      ? volumes.reduce((a, b) => a + b, 0) / volumes.length
+      ? volumes.reduce((a,b) => a+b, 0) / volumes.length
       : null;
 
     const volumeAvailable =
-      Number.isFinite(lastVolume) && lastVolume > 0 &&
-      avgVolume !== null;
+      Number.isFinite(lastVolume) && lastVolume > 0 && avgVolume !== null;
 
-    const volumeConfirm = volumeAvailable
-      ? lastVolume >= avgVolume
-      : false;
+    const volumeConfirm =
+      volumeAvailable ? lastVolume >= avgVolume : null;
 
-    // News filter always has priority.
+    // NEWS FILTER
+    const allSteps = step1 && step2 && step3 && step4;
+
     let decision = "WAIT";
     let reason = "One or more of the four strategy steps is not confirmed.";
 
-    const allSteps = step1 && step2 && step3 && step4;
-    const supportingChecks = indicatorConfirm &&
-      !smcConflict && volumeConfirm;
-
     if (news.blocked) {
-      reason = "High-impact news is inside the protection window. Avoid a new trade.";
+      reason = "High-impact news protection: no new trade.";
     } else if (news.caution) {
-      reason = "Medium-impact news is nearby. Wait until the event risk has passed and analyse again.";
-    } else if (allSteps && supportingChecks) {
-      decision = trend;
-      reason = "All four strategy steps and supporting checks agree. Review the next candle and risk before manually entering.";
+      reason = "Medium-impact news nearby. Wait and analyse again.";
     } else if (smcConflict) {
-      reason = "SMC structure conflicts with the strategy direction. Wait for clarity.";
-    } else if (!volumeAvailable) {
-      reason = "Volume data is unavailable from the current data feed. Full confirmation is not possible.";
+      reason = "SMC direction conflicts with the main strategy.";
+    } else if (!indicatorConfirm) {
+      reason = "Indicator confirmation is not aligned.";
+    } else if (allSteps) {
+      decision = trend;
+      reason = "All four steps and supporting checks agree.";
     }
 
-    const fmt = n =>
-      Number.isFinite(n) ? n.toFixed(3) : "N/A";
+    // ENTRY, SL AND TP — only after full confirmation
+    let entry = null;
+    let sl = null;
+    let tp1 = null;
+    let tp2 = null;
+    let tp3 = null;
+    let risk = null;
+    let entryPlan = "No trade plan. Wait for all confirmations.";
 
-    const stepStatus = ok => ok ? "CONFIRMED" : "WAIT — NOT CONFIRMED";
+    if (decision !== "WAIT") {
+      const recent = c5.slice(-12);
+      const recentLow = Math.min(...recent.map(c => c.low));
+      const recentHigh = Math.max(...recent.map(c => c.high));
+      const buffer = Math.max((atr5 || 0) * 0.2, pointBuffer * 0.1);
 
-    const eventText = list => list.map(e => {
-      const mins = Math.round(e.minutes);
-      return safe(e.currency) + " — " + safe(e.title) +
-        " (" + (mins > 0 ? "in " + mins + " min" : Math.abs(mins) + " min ago") + ")";
-    }).join("<br>");
+      entry = last5.close;
+
+      sl = decision === "BUY"
+        ? recentLow - buffer
+        : recentHigh + buffer;
+
+      risk = decision === "BUY" ? entry - sl : sl - entry;
+
+      if (risk > 0 && Number.isFinite(risk)) {
+        tp1 = decision === "BUY" ? entry + risk : entry - risk;
+        tp2 = decision === "BUY" ? entry + risk * 2 : entry - risk * 2;
+        tp3 = decision === "BUY" ? entry + risk * 3 : entry - risk * 3;
+
+        entryPlan = "Reference entry is the last closed 5M candle price. Check live broker price before any manual execution.";
+      } else {
+        decision = "WAIT";
+        entryPlan = "Risk calculation invalid. No trade.";
+      }
+    }
+
+    const fmt = n => Number.isFinite(n) ? n.toFixed(3) : "N/A";
+    const status = ok => ok ? "CONFIRMED" : "WAIT — NOT CONFIRMED";
+
+    const eventText = list => list.map(e =>
+      safe(e.currency) + " — " + safe(e.title) +
+      " (" + Math.round(e.minutes) + " min)"
+    ).join("<br>");
 
     const newsText = news.blocked
       ? "<b class='red'>HIGH IMPACT — NO TRADE</b><br>" + eventText(news.high)
@@ -680,73 +670,69 @@ async function analyze() {
         : "<b class='teal'>No high/medium event in protection window</b>";
 
     const nextClose = new Date(
-     new Date(last5.datetime).getTime() + 5 * 60 * 1000
+      new Date(last5.datetime).getTime() + 5 * 60 * 1000
     );
 
     const nextCloseText = Number.isFinite(nextClose.getTime())
       ? nextClose.toLocaleString()
-      : "Check the next 5M candle close";
+      : "Check next 5M candle close";
 
     result.innerHTML =
-      "<b>JARVIS — 4-STEP ANALYSIS COMPLETE</b>" +
-      "<br>Platform selected: " + safe(platform) +
+      "<b>JARVIS — COMPLETE STRATEGY ANALYSIS</b>" +
+      "<br>Platform: " + safe(platform) +
       "<br>Market: " + safe(symbol) +
-      "<br>Data feed: Twelve Data — not direct Exness broker data" +
+      "<br>Market data: Twelve Data — not a direct broker feed" +
 
-      "<br><br><b>STEP 1 — 30M TREND</b>" +
-      "<br>Market structure: " + safe(trend) +
-      "<br>EMA 50: " + fmt(ema50) +
-      "<br>EMA 200: " + fmt(ema200) +
-      "<br>Trend confirmation: " + stepStatus(step1) +
-
-      "<br><br><b>STEP 2 — RETRACEMENT ZONE</b>" +
-      "<br>Swing high: " + (hp ? fmt(hp.price) : "Not found") +
-      "<br>Swing low: " + (lp ? fmt(lp.price) : "Not found") +
+      "<br><br><b>YOUR ONE STRATEGY — FOUR STEPS</b>" +
+      "<br>1. 30M trend: " + safe(trend) + " — " + status(step1) +
+      "<br>2. Retracement zone: " + status(step2) +
       "<br>50% midpoint: " + fmt(midpoint) +
-      "<br>Upper inward level: " + fmt(upperZone) +
-      "<br>Lower inward level: " + fmt(lowerZone) +
-      "<br>Price inside zone: " + (inZone ? "YES" : "NO") +
-      "<br>Zone confirmation: " + stepStatus(step2) +
-
-      "<br><br><b>STEP 3 — 5M RETEST</b>" +
-      "<br>Retest confirmation: " + stepStatus(step3) +
-
-      "<br><br><b>STEP 4 — CLOSED CANDLE</b>" +
-      "<br>Pattern: " + safe(pattern) +
-      "<br>Candle direction: " + candleDirection +
-      "<br>Candle confirmation: " + stepStatus(step4) +
+      "<br>Upper level: " + fmt(upperZone) +
+      "<br>Lower level: " + fmt(lowerZone) +
+      "<br>Price in zone: " + (inZone ? "YES" : "NO") +
+      "<br>3. 5M retest: " + status(step3) +
+      "<br>4. Candle: " + safe(pattern) + " — " + status(step4) +
 
       "<br><br><b>SMART MONEY CHECK</b>" +
       "<br>" + safe(structure) +
-      "<br>SMC direction: " + smcBias +
-      "<br>SMC conflict: " + (smcConflict ? "YES" : "NO") +
+      "<br>SMC bias: " + smcBias +
+      "<br>Conflict: " + (smcConflict ? "YES" : "NO") +
       "<br><small>SMC is a candle-data estimate, not verified institutional order flow.</small>" +
 
-      "<br><br><b>INDICATOR CHECK</b>" +
+      "<br><br><b>INDICATORS</b>" +
+      "<br>EMA 50: " + fmt(ema50) +
+      "<br>EMA 200: " + fmt(ema200) +
       "<br>RSI 14: " + fmt(rsi) +
       "<br>ATR 14: " + fmt(atr) +
       "<br>Indicator direction: " + indicatorBias +
-      "<br>Volume: " + (volumeAvailable ? (volumeConfirm ? "Above average" : "Below average") : "Unavailable") +
+      "<br>Volume: " + (volumeAvailable ? (volumeConfirm ? "Above average" : "Below average") : "Unavailable — not used as a blocker") +
 
       "<br><br><b>ECONOMIC NEWS — " + safe(news.source) + "</b>" +
       "<br>Relevant currencies: " + safe(news.currencies.join(", ")) +
       "<br>" + newsText +
 
-      "<br><br><b>FINAL JARVIS DECISION: " + safe(decision) + "</b>" +
+      "<br><br><b>FINAL DECISION: " + safe(decision) + "</b>" +
       "<br>" + safe(reason) +
 
-      "<br><br><b>Next 5M candle close (estimated):</b> " + safe(nextCloseText) +
-      "<br>After that candle closes, run Analyze again for fresh confirmation." +
-      "<br><br><small>Analysis only. No automatic orders. Confirm price and risk on Exness before manually executing any trade. Signals are not guaranteed.</small>";
+      "<br><br><b>TRADE PLAN</b>" +
+      "<br>Entry reference: " + fmt(entry) +
+      "<br>Stop Loss: " + fmt(sl) +
+      "<br>Take Profit 1 (1:1): " + fmt(tp1) +
+      "<br>Take Profit 2 (1:2): " + fmt(tp2) +
+      "<br>Take Profit 3 (1:3): " + fmt(tp3) +
+      "<br>" + safe(entryPlan) +
+
+      "<br><br><b>Next 5M candle close:</b> " + safe(nextCloseText) +
+      "<br>Run analysis again after the candle closes." +
+      "<br><br><small>Analysis only. No automatic orders. These are calculated reference levels, not guaranteed signals. Verify live price, spread, contract size and risk on your selected broker.</small>";
 
   } catch (error) {
     result.innerHTML =
       "<b>ANALYSIS NOT COMPLETED</b><br>" +
       safe(error.message) +
-      "<br>JARVIS will not issue a trade direction without verified market and news data.";
+      "<br>Decision: WAIT. No trade plan issued.";
   }
 }
-
 
 function runTripleCheck(){
  const t=document.getElementById("trend").value;
