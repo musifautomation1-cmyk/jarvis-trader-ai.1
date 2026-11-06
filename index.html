@@ -399,7 +399,7 @@ async function jarvisGetNews(symbol) {
 
 
 function jarvisNewsAssessment(data, symbol) {
-  const now = Math.floor(Date.now() / 1000);
+  const now = Number(data.server_time || Math.floor(Date.now() / 1000));
   const events = Array.isArray(data?.events) ? data.events : [];
 
   if (!data || !Array.isArray(data.events) || events.length === 0) {
