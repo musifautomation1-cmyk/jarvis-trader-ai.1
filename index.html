@@ -1214,141 +1214,318 @@ a{color:#eac66e!important}
 })();
 </script>
 
-<!-- MUSIF TRADER AI SUPABASE AUTH -->
+
+<!-- MUSIF TRADER AI - COMPLETE AUTHENTICATION -->
 <style>
 #musif-auth {
   position:fixed;inset:0;z-index:99999;
   display:none;align-items:center;justify-content:center;
-  padding:20px;background:#050608;
+  padding:20px;background:#050608;overflow-y:auto;
 }
 body.musif-locked main,
 body.musif-locked header,
-body.musif-locked nav {display:none!important}
+body.musif-locked nav {
+  display:none!important;
+}
 body.musif-locked #musif-auth {display:flex}
 .auth-card {
   width:min(100%,420px);padding:25px;
   border:1px solid #b58a3b;border-radius:18px;
   background:#11100c;color:#f5d98b;
+  box-shadow:0 0 35px #d5a23c20;
 }
-.auth-card h2{text-align:center}
+.auth-card h2{text-align:center;color:#f5d98b}
 .auth-card input {
-  width:100%;padding:13px;margin:7px 0;
-  border:1px solid #725522;border-radius:9px;
-  background:#080a0d;color:white;
+  box-sizing:border-box;width:100%;padding:13px;
+  margin:7px 0;border:1px solid #725522;
+  border-radius:9px;background:#080a0d;color:white;
 }
 .auth-card button {
   width:100%;padding:13px;margin-top:9px;
   border-radius:9px;font-weight:bold;
 }
-#auth-message {font-size:12px;white-space:pre-wrap;margin-top:12px}
+.auth-switch {display:flex;gap:8px}
+#auth-message {
+  font-size:13px;white-space:pre-wrap;
+  margin-top:13px;line-height:1.5;
+}
+.auth-note {font-size:11px;color:#b9aa88}
 </style>
 
 <div id="musif-auth">
  <div class="auth-card">
   <h2>♛ MUSIF TRADER AI</h2>
-  <p>Secure account access</p>
-  <input id="auth-name" placeholder="Full name (signup only)">
-  <input id="auth-email" type="email" placeholder="Email address">
-  <input id="auth-password" type="password" placeholder="Password">
-  <button id="auth-login">SIGN IN</button>
-  <button id="auth-signup">CREATE ACCOUNT</button>
-  <button id="auth-google" class="secondary">CONTINUE WITH GOOGLE</button>
-  <button id="auth-reset" class="secondary">FORGOT PASSWORD</button>
-  <div id="auth-message"></div>
+  <p id="auth-heading">Create your account</p>
+
+  <div id="auth-name-wrap">
+   <input id="auth-name" placeholder="Full Name" autocomplete="name">
+  </div>
+
+  <input id="auth-email" type="email"
+   placeholder="Real Email Address" autocomplete="email">
+
+  <input id="auth-password" type="password"
+   placeholder="Password (minimum 8 characters)"
+   autocomplete="new-password">
+
+  <div id="auth-confirm-wrap">
+   <input id="auth-confirm" type="password"
+    placeholder="Confirm Password" autocomplete="new-password">
+  </div>
+
+  <div id="auth-recovery-wrap" style="display:none">
+   <input id="auth-new-password" type="password"
+    placeholder="New Password (minimum 8 characters)">
+   <input id="auth-new-confirm" type="password"
+    placeholder="Confirm New Password">
+  </div>
+
+  <button id="auth-submit">CREATE ACCOUNT</button>
+
+  <div class="auth-switch">
+   <button id="auth-show-signin" class="secondary">SIGN IN</button>
+   <button id="auth-show-signup" class="secondary">CREATE ACCOUNT</button>
+  </div>
+
+  <button id="auth-google" class="secondary">
+   CONTINUE WITH GOOGLE
+  </button>
+  <button id="auth-reset" class="secondary">
+   FORGOT PASSWORD
+  </button>
+
+  <p class="auth-note">
+   Email verification is required before dashboard access.
+  </p>
+  <div id="auth-message" role="status" aria-live="polite"></div>
  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async function(){
- const URL="https://khbdnkiqkbwnkyzvhnmn.supabase.co";
- const KEY="sb_publishable_F_5G8ePwYmV0MODmaEY9OQ_bE_8CvXJ";
- const message=document.getElementById("auth-message");
- const email=()=>document.getElementById("auth-email").value.trim();
- const password=()=>document.getElementById("auth-password").value;
- const say=t=>message.textContent=t;
+ const SUPABASE_URL =
+  "https://khbdnkiqkbwnkyzvhnmn.supabase.co";
+
+ const SUPABASE_KEY =
+  const SUPABASE_KEY = "sb_publishable_F_5G8ePwYmV0MODmaEY9OQ_bE_8CvXJ";
+
+ const $ = id => document.getElementById(id);
+ const message = $("auth-message");
+ const say = text => message.textContent = text;
+ const email = () => $("auth-email").value.trim();
+ const password = () => $("auth-password").value;
+
+ let mode = "signup";
+ let recoveryMode = false;
 
  document.body.classList.add("musif-locked");
 
- if(!window.supabase){
-  say("Login service unavailable. Refresh the page.");
+ if (!window.supabase) {
+  say("Authentication service unavailable. Refresh the page.");
   return;
  }
 
- const sb=window.supabase.createClient(URL,KEY);
+ if (SUPABASE_KEY.includes("PASTE_")) {
+  say("Add your Supabase publishable key in the code first.");
+  return;
+ }
 
- function showApp(session){
-  document.body.classList.toggle("musif-locked",!session);
-  if(session){
-   let b=document.getElementById("musif-logout");
-   if(!b){
-    b=document.createElement("button");
-    b.id="musif-logout";
-    b.textContent="LOG OUT";
-    b.className="secondary";
-    b.style.marginLeft="10px";
-    document.querySelector("header").appendChild(b);
-    b.onclick=async()=>{await sb.auth.signOut()};
+ const sb = window.supabase.createClient(
+  SUPABASE_URL, SUPABASE_KEY
+ );
+
+ function verified(session) {
+  return !!session?.user?.email_confirmed_at;
+ }
+
+ function showApp(session) {
+  const allowed = verified(session);
+  document.body.classList.toggle("musif-locked", !allowed);
+
+  if (allowed) {
+   let logout = $("musif-logout");
+
+   if (!logout) {
+    logout = document.createElement("button");
+    logout.id = "musif-logout";
+    logout.textContent = "LOG OUT";
+    logout.className = "secondary";
+    logout.style.marginLeft = "10px";
+
+    document.querySelector("header")?.appendChild(logout);
+
+    logout.onclick = async () => {
+     await sb.auth.signOut();
+    };
    }
   }
  }
 
- document.getElementById("auth-login").onclick=async()=>{
-  if(!email()||!password())return say("Enter email and password.");
-  say("Signing in...");
-  const {data,error}=await sb.auth.signInWithPassword({
-   email:email(),password:password()
-  });
-  if(error)return say(error.message);
-  showApp(data.session);
-  say("");
- };
+ function setMode(next) {
+  mode = next;
+  recoveryMode = false;
 
- document.getElementById("auth-signup").onclick=async()=>{
-  if(!email()||password().length<8)
-   return say("Enter email and password (minimum 8 characters).");
-  say("Creating account...");
-  const {data,error}=await sb.auth.signUp({
-   email:email(),
-   password:password(),
-   options:{data:{
-    full_name:document.getElementById("auth-name").value.trim()
-   }}
-  });
-  if(error)return say(error.message);
-  if(data.session){
+  $("auth-heading").textContent =
+   mode === "signup" ? "Create your account" : "Welcome back";
+
+  $("auth-name-wrap").style.display =
+   mode === "signup" ? "block" : "none";
+
+  $("auth-confirm-wrap").style.display =
+   mode === "signup" ? "block" : "none";
+
+  $("auth-recovery-wrap").style.display = "none";
+
+  $("auth-password").style.display = "block";
+
+  $("auth-submit").textContent =
+   mode === "signup" ? "CREATE ACCOUNT" : "SIGN IN";
+
+  say("");
+ }
+
+ $("auth-show-signin").onclick = () => setMode("signin");
+ $("auth-show-signup").onclick = () => setMode("signup");
+
+ $("auth-submit").onclick = async () => {
+  const e = email();
+  const p = password();
+
+  if (recoveryMode) {
+   const newPassword = $("auth-new-password").value;
+   const confirm = $("auth-new-confirm").value;
+
+   if (newPassword.length < 8)
+    return say("New password must be at least 8 characters.");
+
+   if (newPassword !== confirm)
+    return say("New passwords do not match.");
+
+   say("Updating password...");
+
+   const {error} = await sb.auth.updateUser({
+    password: newPassword
+   });
+
+   if (error) return say(error.message);
+
+   recoveryMode = false;
+   await sb.auth.signOut();
+   setMode("signin");
+   return say("Password updated. Please sign in.");
+  }
+
+  if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+   return say("Enter a valid email address.");
+
+  if (p.length < 8)
+   return say("Password must be at least 8 characters.");
+
+  if (mode === "signup") {
+   const name = $("auth-name").value.trim();
+
+   if (!name) return say("Enter your full name.");
+
+   if ($("auth-confirm").value !== p)
+    return say("Passwords do not match.");
+
+   say("Creating your account...");
+
+   const {data,error} = await sb.auth.signUp({
+    email:e,
+    password:p,
+    options:{
+     data:{full_name:name},
+     emailRedirectTo:
+      window.location.origin + window.location.pathname
+    }
+   });
+
+   if (error) return say(error.message);
+
+   if (data.session && verified(data.session)) {
+    showApp(data.session);
+    return say("Account created and email verified.");
+   }
+
+   say(
+    "Account created. Check your inbox and Spam folder. " +
+    "Click the verification link before signing in."
+   );
+
+  } else {
+   say("Signing in...");
+
+   const {data,error} = await sb.auth.signInWithPassword({
+    email:e,password:p
+   });
+
+   if (error) return say(error.message);
+
+   if (!verified(data.session)) {
+    await sb.auth.signOut();
+    return say("Please verify your email before accessing the dashboard.");
+   }
+
    showApp(data.session);
-   say("Account created.");
-  }else{
-   say("Check your email to confirm your account, then sign in.");
+   say("");
   }
  };
 
- document.getElementById("auth-google").onclick=async()=>{
+ $("auth-google").onclick = async () => {
   say("Opening Google login...");
-  const {error}=await sb.auth.signInWithOAuth({
+
+  const {error} = await sb.auth.signInWithOAuth({
    provider:"google",
-   options:{redirectTo:location.href}
+   options:{
+    redirectTo:
+     window.location.origin + window.location.pathname
+   }
   });
-  if(error)say(error.message);
+
+  if (error) say(error.message);
  };
 
- document.getElementById("auth-reset").onclick=async()=>{
-  if(!email())return say("Enter your email first.");
-  say("Sending reset email...");
-  const {error}=await sb.auth.resetPasswordForEmail(email(),{
-   redirectTo:location.href
+ $("auth-reset").onclick = async () => {
+  if (!email()) return say("Enter your email address first.");
+
+  say("Requesting password reset...");
+
+  const {error} = await sb.auth.resetPasswordForEmail(email(),{
+   redirectTo:window.location.origin + window.location.pathname
   });
-  say(error?error.message:"Check your email for the reset link.");
+
+  say(error
+   ? error.message
+   : "If this account exists, a password reset email will be sent."
+  );
  };
 
- sb.auth.onAuthStateChange((_event,session)=>showApp(session));
- const {data,error}=await sb.auth.getSession();
- if(error)say(error.message);
+ sb.auth.onAuthStateChange((event,session) => {
+  if (event === "PASSWORD_RECOVERY") {
+   recoveryMode = true;
+   $("auth-heading").textContent = "Reset your password";
+   $("auth-name-wrap").style.display = "none";
+   $("auth-confirm-wrap").style.display = "none";
+   $("auth-password").style.display = "none";
+   $("auth-recovery-wrap").style.display = "block";
+   $("auth-submit").textContent = "UPDATE PASSWORD";
+   showApp(null);
+   say("Enter your new password.");
+   return;
+  }
+
+  showApp(session);
+ });
+
+ const {data,error} = await sb.auth.getSession();
+
+ if (error) say(error.message);
  else showApp(data.session);
+
+ setMode("signup");
 })();
 </script>
-</body>
-</html>
 </body>
 </html>
