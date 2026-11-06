@@ -1215,10 +1215,12 @@ a{color:#eac66e!important}
 </script>
 
 
-<!-- MUSIF TRADER AI - GOOGLE ONLY AUTH -->
+
+<!-- MUSIF TRADER AI - GOOGLE AUTH + WELCOME -->
 
 <style>
-#musif-auth {
+#musif-auth,
+#musif-welcome {
   position: fixed;
   inset: 0;
   z-index: 99999;
@@ -1227,6 +1229,8 @@ a{color:#eac66e!important}
   justify-content: center;
   padding: 20px;
   background: #050608;
+  color: #f5d98b;
+  font-family: Arial, sans-serif;
 }
 
 body.musif-locked main,
@@ -1239,61 +1243,102 @@ body.musif-locked #musif-auth {
   display: flex;
 }
 
-.auth-card {
+body.musif-welcome-active #musif-welcome {
+  display: flex;
+}
+
+.musif-auth-card {
   width: min(100%, 420px);
-  padding: 28px;
-  border: 1px solid #b58a3b;
-  border-radius: 18px;
-  background: #11100c;
-  color: #f5d98b;
-  box-shadow: 0 0 35px #d5a23c30;
+  padding: 30px;
+  border: 1px solid #c49a43;
+  border-radius: 20px;
+  background: linear-gradient(145deg,#17150f,#080808);
   text-align: center;
+  box-shadow: 0 0 35px #d5a23c30;
 }
 
-.auth-card h2 {
+.musif-auth-card h1 {
   color: #f5d98b;
+  font-size: 25px;
 }
 
-.auth-card button {
+.musif-auth-card p {
+  color: #c9b98e;
+  line-height: 1.5;
+}
+
+.musif-auth-btn {
   width: 100%;
   padding: 15px;
-  margin-top: 15px;
-  border-radius: 9px;
+  margin-top: 13px;
+  border-radius: 10px;
+  border: 1px solid #ffe6a0;
+  background: linear-gradient(135deg,#fff0a9,#d5a23c,#95651e);
+  color: #171006;
   font-weight: bold;
   cursor: pointer;
 }
 
-#auth-google {
-  background: linear-gradient(135deg, #fff0a9, #d5a23c 55%, #95651e);
-  color: #171006;
-  border: 1px solid #ffe6a0;
+.musif-auth-btn:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.musif-auth-secondary {
+  background: transparent;
+  color: #f5d98b;
+  border: 1px solid #b58a3b;
 }
 
 #auth-message {
-  font-size: 13px;
-  white-space: pre-wrap;
+  min-height: 22px;
   margin-top: 15px;
   color: #f5d98b;
+  font-size: 13px;
+  white-space: pre-wrap;
 }
 
-.auth-note {
-  font-size: 11px;
-  color: #b9aa88;
+#musif-logout {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 99990;
+  padding: 10px 16px;
+  background: #17150f;
+  border: 1px solid #c49a43;
+  border-radius: 9px;
+  color: #f5d98b;
+  cursor: pointer;
 }
 </style>
 
 <div id="musif-auth">
-  <div class="auth-card">
-    <h2>♛ MUSIF TRADER AI</h2>
-    <p>Welcome to your trading command centre</p>
+  <div class="musif-auth-card">
+    <h1>♛ MUSIF TRADER AI</h1>
+    <p>Welcome to your personal trading command centre.</p>
 
-    <button id="auth-google">CONTINUE WITH GOOGLE</button>
+    <button class="musif-auth-btn" id="auth-google-signup">
+      CREATE ACCOUNT WITH GOOGLE
+    </button>
 
-    <p class="auth-note">
-      Secure sign-in with your Google account.
-    </p>
+    <button class="musif-auth-btn musif-auth-secondary"
+      id="auth-google-signin">
+      SIGN IN WITH GOOGLE
+    </button>
 
     <div id="auth-message" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<div id="musif-welcome">
+  <div class="musif-auth-card">
+    <h1>♛ WELCOME TO MUSIF TRADER AI</h1>
+    <p>Your trading command centre is ready.</p>
+    <p>Stay disciplined. Analyse carefully. Trade responsibly.</p>
+
+    <button class="musif-auth-btn" id="open-dashboard">
+      OPEN DASHBOARD
+    </button>
   </div>
 </div>
 
@@ -1321,47 +1366,64 @@ body.musif-locked #musif-auth {
 
   const sb = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
   );
 
   function isGoogleUser(session) {
-    const user = session?.user;
+    const user = session && session.user;
+    if (!user) return false;
 
-    return user?.app_metadata?.provider === "google" ||
-      user?.identities?.some(
+    return user.app_metadata?.provider === "google" ||
+      user.identities?.some(
         identity => identity.provider === "google"
       );
   }
 
-  function showApp(session) {
-    const allowed = isGoogleUser(session);
+  function lockApp() {
+    document.body.classList.add("musif-locked");
+    document.body.classList.remove("musif-welcome-active");
+    $("musif-logout")?.remove();
+  }
 
-    document.body.classList.toggle(
-      "musif-locked",
-      !allowed
-    );
+  function showWelcome() {
+    document.body.classList.remove("musif-locked");
+    document.body.classList.add("musif-welcome-active");
 
-    if (allowed && !$("musif-logout")) {
+    if (!$("musif-logout")) {
       const logout = document.createElement("button");
-
       logout.id = "musif-logout";
       logout.textContent = "LOG OUT";
-      logout.className = "secondary";
-      logout.style.marginLeft = "10px";
-
-      document.querySelector("header")?.appendChild(logout);
 
       logout.onclick = async () => {
-        await sb.auth.signOut();
-      };
-    }
+        logout.disabled = true;
+        const { error } = await sb.auth.signOut();
 
-    if (!allowed) {
-      $("musif-logout")?.remove();
+        if (error) {
+          logout.disabled = false;
+          say(error.message);
+        } else {
+          lockApp();
+          say("You have logged out.");
+        }
+      };
+
+      document.body.appendChild(logout);
     }
   }
 
-  $("auth-google").onclick = async () => {
+  async function googleLogin() {
+    const signup = $("auth-google-signup");
+    const signin = $("auth-google-signin");
+
+    signup.disabled = true;
+    signin.disabled = true;
     say("Connecting securely to Google...");
 
     const { error } = await sb.auth.signInWithOAuth({
@@ -1374,34 +1436,49 @@ body.musif-locked #musif-auth {
 
     if (error) {
       say(error.message);
+      signup.disabled = false;
+      signin.disabled = false;
     }
+  }
+
+  $("auth-google-signup").onclick = googleLogin;
+  $("auth-google-signin").onclick = googleLogin;
+
+  $("open-dashboard").onclick = () => {
+    document.body.classList.remove("musif-welcome-active");
   };
 
   sb.auth.onAuthStateChange((event, session) => {
-    if (session && !isGoogleUser(session)) {
-      showApp(null);
-      sb.auth.signOut();
-      return;
-    }
+    if (session && isGoogleUser(session)) {
+      showWelcome();
+    } else {
+      lockApp();
 
-    showApp(session);
+      if (session) {
+        setTimeout(() => sb.auth.signOut(), 0);
+      }
+    }
   });
 
   const { data, error } = await sb.auth.getSession();
 
   if (error) {
-    say(error.message);
-    showApp(null);
+    lockApp();
+    say("Login check failed: " + error.message);
     return;
   }
 
-  if (data.session && !isGoogleUser(data.session)) {
-    await sb.auth.signOut();
-    showApp(null);
+  if (data.session && isGoogleUser(data.session)) {
+    showWelcome();
   } else {
-    showApp(data.session);
+    lockApp();
+
+    if (data.session) {
+      await sb.auth.signOut();
+    }
   }
 })();
 </script>
+
 </body>
 </html>
