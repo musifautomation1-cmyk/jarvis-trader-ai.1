@@ -64,7 +64,7 @@ a{color:var(--teal)}
  <div class="grid">
   <div class="metric"><span class="small">PRIMARY MARKET</span><strong>XAUUSD</strong></div>
   <div class="metric"><span class="small">PLATFORM</span><strong id="homePlatform">Exness</strong></div>
-  <div class="metric"><span class="small">STRATEGIES</span><strong>02 ACTIVE</strong></div>
+  <div class="metric"><span class="small">STRATEGIES</span><strong>01 ACTIVE</strong></div>
   <div class="metric"><span class="small">AUTO ORDERS</span><strong class="teal">OFF</strong></div>
  </div>
  <div class="card">
@@ -87,9 +87,10 @@ a{color:var(--teal)}
 
   <div class="card">
     <label>Trading platform</label>
-    <select id="platform" onchange="document.getElementById('homePlatform').textContent=this.value">
-      <option>Exness</option>
-    </select>
+   <select id="platform" onchange="document.getElementById('homePlatform').textContent=this.value">
+  <option value="Exness">Exness</option>
+  <option value="MT5">MetaTrader 5 (MT5)</option>
+</select>
 
     <label>Market instrument</label>
     <select id="symbol" onchange="loadChart()">
