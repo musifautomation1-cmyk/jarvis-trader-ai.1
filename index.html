@@ -147,36 +147,49 @@ TradingView display chart. JARVIS analysis uses Twelve Data, not a direct Exness
  <div class="card"><h3>Live chart provider</h3><div class="chart" id="marketChart"></div><p class="disclaimer">Chart data is supplied by TradingView and may differ from your broker's executable prices.</p></div>
 </section>
 
-<section id="strategy" class="page">
-  <h2>JARVIS — Strategy Centre</h2>
+<section id="account" class="page">
+  <h2>ACCOUNT & SETTINGS</h2>
 
   <div class="card">
-    <h3>ONE COMBINED STRATEGY</h3>
-    <p>Musif's 4-step 30M → 5M trading strategy.</p>
+    <h3>♛ GOOGLE ACCOUNT</h3>
+    <p class="muted">Your account is protected by Google Sign-In.</p>
+    <button class="full" onclick="document.getElementById('musif-logout')?.click()">
+      LOG OUT
+    </button>
+  </div>
 
-    <div class="result">
-      <b>STEP 1</b> — 30M trend: HH + HL BUY / LH + LL SELL<br><br>
-      <b>STEP 2</b> — Swing retracement, 50% midpoint and inward 75-point zone<br><br>
-      <b>STEP 3</b> — 5M retest<br><br>
-      <b>STEP 4</b> — Closed bullish/bearish candle confirmation
+  <div class="card">
+    <h3>TRADING SETTINGS</h3>
+    <div class="metric">
+      <span class="small">SUPPORTED PLATFORMS</span>
+      <strong>Exness + MT5</strong>
     </div>
+    <div class="metric" style="margin-top:10px">
+      <span class="small">TRADE EXECUTION</span>
+      <strong>MANUAL ONLY</strong>
+    </div>
+    <div class="metric" style="margin-top:10px">
+      <span class="small">AUTOMATIC ORDERS</span>
+      <strong class="gold">DISABLED</strong>
+    </div>
+  </div>
 
-    <p>Automatic supporting checks: SMC, EMA 50/200, RSI, ATR and economic news.</p>
-    <p class="disclaimer">JARVIS analyses only. You manually execute trades on Exness or MT5. No automatic orders.</p>
+  <div class="card">
+    <h3>DATA & PRIVACY</h3>
+    <p class="disclaimer">
+      Market analysis uses the connected Twelve Data service.
+      It is not a direct Exness or MT5 broker feed.
+      Trade journal entries are saved in this browser.
+    </p>
+  </div>
 
-    <button class="full" onclick="go('analyze')">RUN THE ONE STRATEGY</button>
+  <div class="card">
+    <h3>APPLICATION</h3>
+    <strong class="gold">MUSIF TRADER AI</strong>
+    <p class="small">Personal Trading Intelligence</p>
+    <p class="disclaimer">Analysis only. No automatic trading.</p>
   </div>
 </section>
-<section id="news" class="page">
- <h2>News & Economic Calendar</h2>
- <div class="card">
-  <h3>Before entering a trade</h3>
-  <p class="muted">Check high-impact events, especially CPI, NFP, FOMC, interest-rate decisions and central-bank speeches.</p>
-  <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">OPEN FOREX FACTORY CALENDAR ↗</a>
-  <p class="disclaimer">This app does not currently fetch or interpret live news automatically. Check event time and currency impact yourself.</p>
- </div>
-</section>
-
 <section id="journal" class="page">
  <h2>Trade Journal</h2>
  <div class="card">
@@ -1170,14 +1183,14 @@ a{color:#eac66e!important}
    </div>
    <div class="status">● SYSTEM READY</div>`;
  }
- const titles={
+const titles={
   analyze:"MUSIF AI — TRADE ANALYSIS",
-  strategy:"MUSIF — STRATEGY CENTRE",
+  account:"MUSIF — ACCOUNT & SETTINGS",
   home:"MUSIF TRADER DASHBOARD",
   markets:"LIVE MARKET WATCH",
   news:"NEWS PROTECTION",
   journal:"TRADE JOURNAL"
- };
+};
  Object.entries(titles).forEach(([id,title])=>{
   const el=document.querySelector("#"+id+" h2");
   if(el && id!=="home")el.textContent=title;
