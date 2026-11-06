@@ -102,7 +102,48 @@ a{color:var(--teal)}
   <h3>Strategy 02 — Candlestick Confirmation</h3>
   <p class="small">Manual pattern identification and candle-close confirmation.</p>
  </div>
- <div class="card"><h3>Market chart</h3><div id="analysisChart" class="chart"></div></div>
+<div class="card">
+<h3>03 — TRIPLE CONFIRMATION ENGINE</h3>
+<p class="small">Strategy + Smart Money + Indicators</p>
+
+<label>SMC Structure (BOS / CHOCH)</label>
+<select id="smcBias">
+<option value="unknown">Not checked</option>
+<option value="BUY">Bullish</option>
+<option value="SELL">Bearish</option>
+<option value="mixed">Mixed / unclear</option>
+</select>
+
+<label>Liquidity sweep + Order Block / FVG</label>
+<select id="smcConfirm">
+<option value="no">Not confirmed</option>
+<option value="yes">Confirmed</option>
+</select>
+
+<label>EMA 50/200 + RSI + Volume direction</label>
+<select id="indicatorBias">
+<option value="unknown">Not checked</option>
+<option value="BUY">Bullish</option>
+<option value="SELL">Bearish</option>
+<option value="mixed">Mixed / unclear</option>
+</select>
+
+<label>At least 2 indicators agree?</label>
+<select id="indicatorConfirm">
+<option value="no">No</option>
+<option value="yes">Yes</option>
+</select>
+
+<label>High-impact news risk</label>
+<select id="newsRisk">
+<option value="unknown">Not checked</option>
+<option value="clear">No major event near entry</option>
+<option value="high">High-impact news imminent</option>
+</select>
+
+<button class="full" onclick="runTripleCheck()">RUN TRIPLE CONFIRMATION</button>
+<div id="tripleResult" class="result">Waiting for chart observations.</div>
+</div> <div class="card"><h3>Market chart</h3><div id="analysisChart" class="chart"></div></div>
 </section>
 
 <section id="markets" class="page">
@@ -208,10 +249,58 @@ function analyze(){
  const s=document.getElementById("symbol").value;
  const p=document.getElementById("platform").value;
  document.getElementById("analysisResult").innerHTML=
- "<b class='gold'>MANUAL REVIEW REQUIRED — WAIT</b><br>Platform: "+p+
- "<br>Market: "+s+"<br>Timeframe: "+document.getElementById("timeframe").value+
- "<br>Strategy 01: Review trend, swing, midpoint and retest.<br>Strategy 02: Review candle pattern and candle close.<br><br><b>No verified live signal.</b> Connect a supported data source before treating this as automated analysis.";
+ "<b class='gold'>READY FOR TRIPLE CHECK — WAIT</b><br>"+
+ "Platform: "+safe(p)+"<br>Market: "+safe(s)+
+ "<br>Fill Strategy, SMC and Indicator observations, then run Triple Confirmation."+
+ "<br><b>Live broker data is not connected yet.</b>";
+ document.getElementById("tripleResult").textContent="Waiting for your chart observations.";
  loadChart("analysisChart");
+}
+
+function runTripleCheck(){
+ const t=document.getElementById("trend").value;
+ const c=document.getElementById("confirm").value;
+ const strategy=t.startsWith("BUY")&&c.startsWith("Bullish")?"BUY":
+ t.startsWith("SELL")&&c.startsWith("Bearish")?"SELL":"WAIT";
+
+ const smc=document.getElementById("smcBias").value;
+ const smcOK=document.getElementById("smcConfirm").value==="yes";
+ const ind=document.getElementById("indicatorBias").value;
+ const indOK=document.getElementById("indicatorConfirm").value==="yes";
+ const news=document.getElementById("newsRisk").value;
+
+ const votes=[strategy,smcOK?smc:"WAIT",indOK?ind:"WAIT"];
+ const buy=votes.filter(x=>x==="BUY").length;
+ const sell=votes.filter(x=>x==="SELL").length;
+ const bias=buy>=2&&buy>sell?"BUY":sell>=2&&sell>buy?"SELL":"WAIT";
+
+ let status="WAIT — CONFIRMATIONS NOT ALIGNED";
+ let detail="Do not enter. Wait for missing confirmation.";
+
+ if(buy===3||sell===3){
+  status="3/3 — SETUP CANDIDATE";
+  detail="All three checks agree. Wait for exact entry trigger and define SL/TP.";
+ }else if(bias!=="WAIT"){
+  status="2/3 — SETUP FORMING";
+  detail="Two checks agree. One is missing or disagrees. No entry yet.";
+ }
+
+ if(news==="high"){
+  status="NEWS BLOCK — WAIT";
+  detail="High-impact news is imminent. Avoid a fresh entry.";
+ }
+ if(news==="unknown"){
+  status="WAIT — NEWS NOT CHECKED";
+  detail="Check the economic calendar first.";
+ }
+
+ document.getElementById("tripleResult").innerHTML=
+ "<b>"+status+"</b><br>Directional bias: "+bias+
+ "<br>Strategy: "+strategy+
+ "<br>SMC: "+(smcOK?smc:"NOT CONFIRMED")+
+ "<br>Indicators: "+(indOK?ind:"NOT CONFIRMED")+
+ "<br>News: "+news+"<br><br>"+detail+
+ "<br><small>Manual chart assessment only. No live data feed or automatic orders.</small>";
 }
 function levels(){
  const h=Number(document.getElementById("high").value),l=Number(document.getElementById("low").value),d=Number(document.getElementById("points").value);
