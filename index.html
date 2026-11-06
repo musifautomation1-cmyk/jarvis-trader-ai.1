@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#080d12">
-<title>JARVIS TRADER AI</title>
+<title>Musif TRADER </title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#080d12;--panel:#101a22;--panel2:#14232c;--line:#20343d;--text:#e9f5f4;--muted:#91a5aa;--teal:#36e0c0;--red:#ff657b;--gold:#e8bd65}
@@ -48,7 +48,13 @@ a{color:var(--teal)}
 </head>
 <body>
 <header>
- <div><div class="brand">JARVIS <span>TRADER AI</span></div><div class="sub">YOUR TRADING INTELLIGENCE</div></div>
+ <div class="brand-lockup">
+  <div class="brand-mark">M</div>
+  <div>
+   <div class="brand">MUSIF <span>TRADER AI</span></div>
+   <div class="sub">TRADE SMART • TRADE CONFIDENT</div>
+  </div>
+ </div>
  <div class="status">● SYSTEM READY</div>
 </header>
 <main>
@@ -1049,5 +1055,24 @@ if(header && !document.getElementById("pwaInstall")){
 
 })();
 </script>
-</body>
+.brand-lockup{
+ display:flex;
+ align-items:center;
+ gap:11px;
+}
+.brand-mark{
+ width:43px;
+ height:43px;
+ display:grid;
+ place-items:center;
+ border-radius:13px;
+ background:linear-gradient(145deg,#ffe7a3,#bd842b 55%,#51320d);
+ color:#10131a;
+ font-size:27px;
+ font-weight:1000;
+ font-style:italic;
+ border:1px solid #ffe4a0;
+ box-shadow:0 0 18px #e8bd6544;
+}
+.brand span{color:var(--gold)}</body>
 </html>
