@@ -944,15 +944,7 @@ if(typeof originalAnalyze==="function"){
   const nextRaw=getLine("Next 5M candle close");
   let nextTime=nextRaw;
 
-  /* Existing analysis timestamp is one candle early.
-     Add 5 minutes to show the next complete 5M close. */
-  if(nextRaw && nextRaw!=="Check next 5M candle close"){
-   const parsed=new Date(nextRaw);
-   if(Number.isFinite(parsed.getTime())){
-    parsed.setMinutes(parsed.getMinutes()+5);
-    nextTime=parsed.toLocaleString();
-   }
-  }
+  
 
   const newsBlocked=raw.includes("HIGH IMPACT — NO TRADE");
   const newsCaution=raw.includes("MEDIUM IMPACT — CAUTION");
