@@ -1350,135 +1350,27 @@ body.musif-welcome-active #musif-welcome {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-(async function () {
-  const SUPABASE_URL =
-    "https://khbdnkiqkbwnkyzvhnmn.supabase.co";
 
-  const SUPABASE_KEY =
-    "sb_publishable_F_5G8ePwYmV0MODmaEY9OQ_bE_8CvXJ";
-
-  const $ = id => document.getElementById(id);
-  const say = message => {
-    $("auth-message").textContent = message;
-  };
-
-  document.body.classList.add("musif-locked");
-
-  if (!window.supabase) {
-    say("Authentication service unavailable. Refresh the page.");
-    return;
-  }
-
-  const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
-  );
-
-  function isGoogleUser(session) {
-    const user = session && session.user;
-    if (!user) return false;
-
-    return user.app_metadata?.provider === "google" ||
-      user.identities?.some(
-        identity => identity.provider === "google"
-      );
-  }
-
-  function lockApp() {
-    document.body.classList.add("musif-locked");
-    document.body.classList.remove("musif-welcome-active");
-    $("musif-logout")?.remove();
-  }
-
-  function showWelcome() {
-    document.body.classList.remove("musif-locked");
-    document.body.classList.add("musif-welcome-active");
-
-    if (!$("musif-logout")) {
-      const logout = document.createElement("button");
-      logout.id = "musif-logout";
-      logout.textContent = "LOG OUT";
-
-      logout.onclick = async () => {
-        logout.disabled = true;
-        const { error } = await sb.auth.signOut();
-
-        if (error) {
-          logout.disabled = false;
-          say(error.message);
-        } else {
-          lockApp();
-          say("You have logged out.");
-        }
-      };
-
-      document.body.appendChild(logout);
-    }
-  }
-
-  async function googleLogin() {
-    const signup = $("auth-google-signup");
-    const signin = $("auth-google-signin");
-
-    signup.disabled = true;
-    signin.disabled = true;
-    say("Connecting securely to Google...");
-
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo:
-          window.location.origin + window.location.pathname
-      }
-    });
-
-    if (error) {
-      say(error.message);
-      signup.disabled = false;
-      signin.disabled = false;
-    }
-  }
-
-  $("auth-google-signup").onclick = googleLogin;
-  $("auth-google-signin").onclick = googleLogin;
-$("open-dashboard").onclick = () => {
-  document.body.classList.remove("musif-welcome-active");
+(function () {
   document.body.classList.remove("musif-locked");
-  window.go("home");
-};
+  document.body.classList.remove("musif-welcome-active");
 
-sb.auth.onAuthStateChange((event, session) => {
-  if (session && isGoogleUser(session)) {
-    showWelcome();
-  } else if (!session) {
-    lockApp();
-  }
-});
-  const { data, error } = await sb.auth.getSession();
+  // Temporary direct dashboard access
+  window.addEventListener("load", function () {
+    document.body.classList.remove("musif-locked");
+    document.body.classList.remove("musif-welcome-active");
 
-  if (error) {
-    lockApp();
-    say("Login check failed: " + error.message);
-    return;
-  }
-
-  if (data.session && isGoogleUser(data.session)) {
-    showWelcome();
-  } else {
-    lockApp();
-
-    if (data.session) {
-      await sb.auth.signOut();
+    if (typeof window.go === "function") {
+      window.go("home");
     }
-  }
+  });
+
+  // Remove old login/logout controls
+  document.getElementById("musif-logout")?.remove();
+
+  console.log("MUSIF TRADER AI: Direct dashboard mode enabled.");
 })();
+
 </script>
 
 </body>
