@@ -1262,7 +1262,7 @@ body.musif-locked #musif-auth {display:flex}
   </div>
 
   <input id="auth-email" type="email"
-   placeholder="Real Email Address" autocomplete="email">
+   placeholder="Email Address" autocomplete="email">
 
   <input id="auth-password" type="password"
    placeholder="Password (minimum 8 characters)"
@@ -1280,10 +1280,10 @@ body.musif-locked #musif-auth {display:flex}
     placeholder="Confirm New Password">
   </div>
 
-  <button id="auth-submit">CREATE ACCOUNT</button>
+  <button id="auth-submit">SIGN UP</button>
 
 <div class="auth-switch">
-  <button id="auth-show-signin" class="secondary">SIGN IN</button>
+  <button id="auth-toggle-mode" class="secondary">SIGN IN</button>
 </div>
 
   <button id="auth-google" class="secondary">
@@ -1360,31 +1360,37 @@ body.musif-locked #musif-auth {display:flex}
   }
  }
 
- function setMode(next) {
+function setMode(next) {
   mode = next;
   recoveryMode = false;
 
   $("auth-heading").textContent =
-   mode === "signup" ? "Create your account" : "Welcome back";
+    mode === "signup" ? "Create your account" : "Welcome back";
 
   $("auth-name-wrap").style.display =
-   mode === "signup" ? "block" : "none";
+    mode === "signup" ? "block" : "none";
 
   $("auth-confirm-wrap").style.display =
-   mode === "signup" ? "block" : "none";
+    mode === "signup" ? "block" : "none";
 
   $("auth-recovery-wrap").style.display = "none";
-
   $("auth-password").style.display = "block";
 
   $("auth-submit").textContent =
-   mode === "signup" ? "CREATE ACCOUNT" : "SIGN IN";
+    mode === "signup" ? "SIGN UP" : "SIGN IN";
+
+  $("auth-toggle-mode").textContent =
+    mode === "signup" ? "SIGN IN" : "SIGN UP";
+
+  $("auth-password").autocomplete =
+    mode === "signup" ? "new-password" : "current-password";
 
   say("");
- }
+}
 
- $("auth-show-signin").onclick = () => setMode("signin");
- $("auth-show-signup").onclick = () => setMode("signup");
+$("auth-toggle-mode").onclick = () => {
+  setMode(mode === "signup" ? "signin" : "signup");
+};
 
  $("auth-submit").onclick = async () => {
   const e = email();
