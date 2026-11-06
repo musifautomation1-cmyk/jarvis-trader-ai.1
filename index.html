@@ -48,14 +48,31 @@ a{color:var(--teal)}
 </head>
 <body>
 <header>
- <div class="brand-lockup">
-  <div class="brand-mark">M</div>
-  <div>
-   <div class="brand">MUSIF <span>TRADER AI</span></div>
-   <div class="sub">TRADE SMART • TRADE CONFIDENT</div>
-  </div>
- </div>
- <div class="status">● SYSTEM READY</div>
+ 
+{
+  "name": "MUSIF TRADER AI",
+  "short_name": "MUSIF TRADER",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050608",
+  "theme_color": "#0b0905",
+  "description": "Musif's premium trading analysis workstation",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
+
 </header>
 <main>
 
@@ -1055,24 +1072,172 @@ if(header && !document.getElementById("pwaInstall")){
 
 })();
 </script>
-.brand-lockup{
- display:flex;
- align-items:center;
- gap:11px;
+
+<style id="musif-luxury-theme">
+:root{
+ --bg:#050608;--panel:#0c1015;--panel2:#111820;
+ --line:#55401b;--gold:#e9bd62;--gold2:#fff0b0;
+ --text:#f6f1e5;--muted:#a99d83;
+ --teal:#20e58a;--red:#ff536b;
 }
+*{box-sizing:border-box}
+body{
+ background:radial-gradient(ellipse at 50% -20%,#473313 0%,#10100d 28%,#050608 72%)!important;
+ color:var(--text)!important;font-family:Inter,Arial,sans-serif!important;
+ padding-bottom:25px!important;
+}
+header{
+ min-height:105px;padding:17px 28px!important;
+ background:linear-gradient(100deg,#090909,#171209,#080909)!important;
+ border-bottom:1px solid #a47b2e!important;
+ box-shadow:0 4px 35px #d39c2920;
+}
+.brand-lockup{display:flex;align-items:center;gap:17px}
 .brand-mark{
- width:43px;
- height:43px;
- display:grid;
- place-items:center;
- border-radius:13px;
- background:linear-gradient(145deg,#ffe7a3,#bd842b 55%,#51320d);
- color:#10131a;
- font-size:27px;
- font-weight:1000;
- font-style:italic;
- border:1px solid #ffe4a0;
- box-shadow:0 0 18px #e8bd6544;
+ width:70px;height:70px;position:relative;display:grid;place-items:center;
+ border:2px solid #d9ad50;border-radius:17px;
+ background:linear-gradient(145deg,#33240b,#090909 65%);
+ box-shadow:0 0 24px #e5b84a40,inset 0 0 18px #d8a63c20;
 }
-.brand span{color:var(--gold)}</body>
+.brand-mark .crown{position:absolute;top:-16px;font-size:27px;color:#ffe59a;text-shadow:0 0 12px #e8b94d}
+.brand-mark .letter{font-family:Georgia,serif;font-size:48px;font-weight:900;color:#f5d47e;text-shadow:0 0 16px #d5a23c}
+.brand-name{font-size:clamp(21px,3vw,34px);font-weight:950;letter-spacing:2px;color:#f3d27e;text-shadow:0 2px 15px #b9822c70}
+.brand-tag{font-size:10px;letter-spacing:3px;color:#d2b879;margin-top:6px}
+.status{background:#092117!important;color:#35ef9b!important;border-color:#26764d!important}
+main{max-width:1500px!important;margin:0 auto!important;padding:24px!important}
+.card{
+ background:linear-gradient(145deg,#15130e,#0b0e12 65%)!important;
+ border:1px solid #59451f!important;border-radius:17px!important;
+ box-shadow:0 10px 30px #0009,0 0 14px #d4a33b0a!important;
+}
+h2,h3{color:#f0d28b!important;letter-spacing:.5px}
+.hero{
+ min-height:205px;padding:30px!important;
+ background:radial-gradient(circle at 90% 10%,#59401670,transparent 38%),linear-gradient(120deg,#21190c,#0c1014 70%)!important;
+ border:1px solid #b58a3b!important;
+ box-shadow:0 0 30px #d8a63b16!important;
+}
+.hero h2{font-size:clamp(28px,4vw,43px)!important;color:#f4d98f!important}
+button:not(.secondary){
+ background:linear-gradient(135deg,#fff0a9,#d5a23c 55%,#95651e)!important;
+ color:#171006!important;border:1px solid #ffe6a0!important;
+ box-shadow:0 4px 18px #c28c2c35;
+}
+button.secondary{background:#17140e!important;color:#f4d58b!important;border:1px solid #755a2b!important}
+input,select{
+ background:#090c10!important;color:#f5e9c9!important;
+ border:1px solid #6b5227!important;
+}
+.metric,.result,.signal-cell{
+ background:linear-gradient(145deg,#15150f,#090d11)!important;
+ border-color:#574321!important;
+}
+.gold{color:#f1ca72!important}.teal{color:#39e89a!important}
+.chart{border:1px solid #7a5b26!important;box-shadow:0 0 22px #d6a33b12}
+nav{
+ position:fixed!important;left:0!important;top:120px!important;bottom:15px!important;
+ width:175px!important;right:auto!important;display:flex!important;
+ flex-direction:column!important;justify-content:flex-start!important;gap:8px!important;
+ padding:18px 12px!important;background:linear-gradient(180deg,#151109,#080a0d)!important;
+ border:1px solid #725522!important;border-left:0!important;border-radius:0 18px 18px 0!important;
+ box-shadow:8px 0 30px #0009!important;
+}
+nav button{
+ flex:none!important;width:100%;min-height:57px;border-radius:11px!important;
+ color:#b8aa8c!important;background:transparent!important;
+ text-align:left;padding:10px 13px!important;font-size:12px!important;letter-spacing:1px;
+}
+nav button span{display:inline-block!important;width:28px;font-size:19px!important;vertical-align:middle}
+nav button.active{
+ color:#ffe49a!important;background:linear-gradient(100deg,#684a16,#251b0b)!important;
+ border:1px solid #d2a54c!important;box-shadow:0 0 17px #d2a54c25!important;
+}
+.page{animation:musifIn .25s ease}
+@keyframes musifIn{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:none}}
+.signal-card{border-radius:18px!important;box-shadow:0 0 24px #d6a33b12}
+.signal-card.buy{border:1px solid #19d77b!important;box-shadow:0 0 22px #19d77b22!important}
+.signal-card.sell{border:1px solid #ff536b!important;box-shadow:0 0 22px #ff536b22!important}
+.signal-card.wait{border:1px solid #d8a83e!important;box-shadow:0 0 22px #d8a83e22!important}
+.signal-word{font-size:58px!important;text-shadow:0 0 18px currentColor}
+.signal-card.buy .signal-word{color:#27ed91!important}
+.signal-card.sell .signal-word{color:#ff536b!important}
+.signal-card.wait .signal-word{color:#f3c85e!important}
+.disclaimer{color:#a99d83!important}
+a{color:#eac66e!important}
+@media(min-width:900px){
+ main{margin-left:190px!important}
+ #home .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #home .hero{min-height:220px}
+ #analyze .card{padding:23px!important}
+ #analysisResult .signal-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ header{padding:13px!important;min-height:80px}
+ .brand-mark{width:51px;height:51px}
+ .brand-mark .letter{font-size:36px}
+ .brand-mark .crown{font-size:20px;top:-13px}
+ .brand-tag{font-size:8px;letter-spacing:1.5px}
+ nav{
+  top:auto!important;bottom:0!important;left:0!important;right:0!important;
+  width:100%!important;height:72px!important;flex-direction:row!important;
+  border-radius:15px 15px 0 0!important;border:1px solid #725522!important;
+  padding:5px 2px!important;gap:0!important;
+ }
+ nav button{min-height:52px!important;text-align:center!important;padding:5px 1px!important;font-size:9px!important}
+ nav button span{display:block!important;width:auto!important;margin-bottom:2px}
+ main{margin:0!important;padding:12px!important}
+ body{padding-bottom:78px!important}
+}
+</style>
+
+<script>
+(function(){
+ const header=document.querySelector("header");
+ if(header){
+  header.innerHTML=`
+   <div class="brand-lockup">
+    <div class="brand-mark"><span class="crown">♛</span><span class="letter">M</span></div>
+    <div>
+     <div class="brand-name">MUSIF TRADER AI</div>
+     <div class="brand-tag">ELITE TRADING INTELLIGENCE</div>
+    </div>
+   </div>
+   <div class="status">● SYSTEM READY</div>`;
+ }
+ const titles={
+  analyze:"MUSIF AI — TRADE ANALYSIS",
+  strategy:"MUSIF — STRATEGY CENTRE",
+  home:"MUSIF TRADER DASHBOARD",
+  markets:"LIVE MARKET WATCH",
+  news:"NEWS PROTECTION",
+  journal:"TRADE JOURNAL"
+ };
+ Object.entries(titles).forEach(([id,title])=>{
+  const el=document.querySelector("#"+id+" h2");
+  if(el && id!=="home")el.textContent=title;
+ });
+ const hero=document.querySelector("#home .hero");
+ if(hero){
+  const h=hero.querySelector("h2");
+  if(h)h.innerHTML="WELCOME TO<br>MUSIF TRADER AI";
+  const p=hero.querySelector("p");
+  if(p)p.textContent="Your personal trading command centre. One strategy engine. Clear, disciplined trade decisions.";
+ }
+ const analyzeButton=document.querySelector('#analyze button[onclick="analyze()"]');
+ if(analyzeButton)analyzeButton.textContent="✦ ANALYZE MARKET";
+ const oldAnalyze=window.analyze;
+ if(typeof oldAnalyze==="function"){
+  window.analyze=async function(){
+   await oldAnalyze.apply(this,arguments);
+   const result=document.getElementById("analysisResult");
+   if(result)result.innerHTML=result.innerHTML.replace(/JARVIS/g,"MUSIF");
+  };
+ }
+ document.querySelectorAll("nav button").forEach(b=>{
+  const label=b.dataset.page;
+  if(label)b.setAttribute("aria-label",label);
+ });
+})();
+</script>
+</body>
 </html>
