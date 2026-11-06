@@ -1,171 +1,247 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#080d14">
-<meta name="description" content="Personal trading analysis workstation">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d12">
 <title>JARVIS TRADER AI</title>
+<link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{color-scheme:dark;--bg:#080d14;--panel:#101a26;--panel2:#142131;--line:#243447;--text:#eef4fb;--muted:#91a2b5;--green:#39d69a;--red:#ff6b75;--gold:#e7bd65;--blue:#72a9ff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,sans-serif}
-button,input,select,textarea{font:inherit}button{cursor:pointer}
-.app{max-width:520px;margin:auto;min-height:100dvh;padding-bottom:88px;background:linear-gradient(180deg,#0b1420 0,#080d14 260px)}
-header{position:sticky;top:0;z-index:5;background:#080d14ee;backdrop-filter:blur(14px);padding:17px 17px 12px;border-bottom:1px solid #1c2a39}
-.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#193c3b,#101c2b);display:grid;place-items:center;border:1px solid #2c6656;color:var(--green);font-size:23px}
-h1{font-size:16px;letter-spacing:1.1px;margin:0;font-weight:800}.sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.7px}
-.status{margin-left:auto;font-size:10px;color:var(--gold);border:1px solid #705b30;padding:5px 8px;border-radius:20px}
-main{padding:17px}.screen{display:none}.screen.active{display:block}
-.eyebrow{font-size:11px;color:var(--muted);letter-spacing:1.3px;text-transform:uppercase;margin:5px 0 11px}
-h2{font-size:22px;margin:0 0 5px}.lead{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 17px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:14px;margin-bottom:11px}.metric-label{font-size:11px;color:var(--muted)}.metric{font-size:20px;font-weight:750;margin-top:7px}.tiny{font-size:11px;color:var(--muted);margin-top:4px}
-.pill{display:inline-flex;align-items:center;border-radius:30px;padding:5px 9px;font-size:10px;font-weight:700;background:#263342;color:#cbd8e5}.pill.gold{background:#3b301c;color:var(--gold)}.pill.green{background:#12372d;color:var(--green)}.pill.red{background:#3c2028;color:var(--red)}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.section-title{font-weight:750;font-size:14px;margin:17px 0 10px}
-.notice{border:1px solid #66522b;background:#241e13;color:#e9d4a5;border-radius:13px;padding:12px;font-size:12px;line-height:1.5;margin:12px 0}
-.btn{border:0;border-radius:12px;padding:12px 14px;background:var(--green);color:#06130f;font-weight:800;width:100%}.btn.secondary{background:#1b2a3b;color:var(--text);border:1px solid var(--line)}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}.btn.small{width:auto;padding:9px 12px;font-size:12px}
-label{display:block;color:var(--muted);font-size:11px;margin:11px 0 6px}input,select,textarea{width:100%;background:#09121d;color:var(--text);border:1px solid #2a3b4e;border-radius:10px;padding:12px;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--green)}
-.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.result{background:#0b1721;border:1px solid #294b43;border-radius:13px;padding:13px;margin-top:13px}.result strong{color:var(--green)}
-.list-item{padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}.list-item:last-child{border:0}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;max-width:520px;margin:auto;background:#0c1520f5;backdrop-filter:blur(15px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 5px calc(8px + env(safe-area-inset-bottom))}
-nav button{background:none;border:0;color:var(--muted);font-size:9px;padding:5px 0;display:grid;justify-items:center;gap:4px}nav button span{font-size:19px}nav button.active{color:var(--green)}
-.empty{color:var(--muted);font-size:12px;text-align:center;padding:18px 8px}
-footer{color:#617286;text-align:center;font-size:10px;padding:18px}
+:root{--bg:#080d12;--panel:#101a22;--panel2:#14232c;--line:#20343d;--text:#e9f5f4;--muted:#91a5aa;--teal:#36e0c0;--red:#ff657b;--gold:#e8bd65}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Arial,sans-serif;padding-bottom:85px}
+header{padding:20px 17px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#080d12ed;z-index:5;border-bottom:1px solid var(--line)}
+.brand{font-size:19px;font-weight:900;letter-spacing:1px}.brand span{color:var(--teal)}.sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:2px}
+.status{color:var(--teal);font-size:11px;border:1px solid #245b53;border-radius:20px;padding:7px 10px}
+main{max-width:760px;margin:auto;padding:15px}
+.page{display:none}.page.active{display:block}
+h2{font-size:21px;margin:8px 0}h3{font-size:14px;margin:0 0 12px}
+.muted{color:var(--muted)}.small{font-size:11px;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.hero{background:linear-gradient(135deg,#102c2b,#101a22 65%);border-color:#24564f;padding:20px}
+.hero h2{font-size:24px}.hero p{color:#a9c3c1;line-height:1.5}
+button,select,input{font:inherit}button{border:0;border-radius:10px;padding:12px 15px;background:var(--teal);color:#061411;font-weight:800;cursor:pointer}
+button.secondary{background:#1b3038;color:var(--text);border:1px solid var(--line)}
+button.danger{background:#4b202c;color:#ffd9df}
+input,select{background:#091218;color:var(--text);border:1px solid var(--line);padding:12px;border-radius:9px;width:100%;min-width:0}
+label{font-size:11px;color:var(--muted);display:block;margin:10px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.metric{background:#0a141a;padding:12px;border-radius:11px;border:1px solid var(--line)}
+.metric strong{display:block;font-size:17px;margin-top:6px}
+.teal{color:var(--teal)}.red{color:var(--red)}.gold{color:var(--gold)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.full{width:100%;margin-top:12px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0c151cf5;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));z-index:10}
+nav button{background:transparent;color:var(--muted);padding:8px 5px;font-size:10px;flex:1}
+nav button.active{color:var(--teal)}
+nav span{display:block;font-size:18px;margin-bottom:4px}
+.chart{height:360px;border-radius:12px;overflow:hidden;background:#0b1218}
+.check{display:flex;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.check input{width:18px;height:18px;accent-color:var(--teal)}
+.result{padding:13px;border-radius:10px;background:#0b151b;border:1px solid var(--line);margin-top:12px;line-height:1.6}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px 5px;border-bottom:1px solid var(--line);font-size:12px}
+a{color:var(--teal)}
+.disclaimer{font-size:11px;line-height:1.5;color:var(--muted)}
+@media(max-width:420px){.grid{gap:8px}.card{padding:13px}.metric strong{font-size:15px}}
 </style>
 </head>
 <body>
-<div class="app">
-<header><div class="brand"><div class="logo">⌁</div><div><h1>JARVIS TRADER AI</h1><div class="sub">PERSONAL TRADING INTELLIGENCE</div></div><div class="status">DEMO BUILD</div></div></header>
+<header>
+ <div><div class="brand">JARVIS <span>TRADER AI</span></div><div class="sub">YOUR TRADING INTELLIGENCE</div></div>
+ <div class="status">● SYSTEM READY</div>
+</header>
 <main>
-<section id="dashboard" class="screen active">
-<div class="eyebrow">Your trading command centre</div><h2>Good trading starts with patience.</h2><p class="lead">Scan the market, check your rules, then make your own decision.</p>
-<div class="grid">
-<div class="card"><div class="metric-label">PRIMARY MARKET</div><div class="metric">XAUUSD</div><div class="tiny">Gold / US Dollar</div></div>
-<div class="card"><div class="metric-label">CONNECTION</div><div class="metric">Not connected</div><div class="tiny">No live quotes yet</div></div>
-<div class="card"><div class="metric-label">YOUR TIMEFRAME</div><div class="metric">30M → 5M</div><div class="tiny">Strategy workflow</div></div>
-<div class="card"><div class="metric-label">AI STATUS</div><div class="metric">Standby</div><div class="tiny">Awaiting verified data</div></div>
-</div>
-<div class="notice"><b>Prototype mode:</b> This app does not yet receive live Exness prices, live news or AI-generated signals. Never trade from sample or manually entered values alone.</div>
-<div class="section-title">Quick actions</div>
-<div class="grid"><button class="btn" onclick="show('strategy')">Check my strategy</button><button class="btn secondary" onclick="show('scanner')">Open market scanner</button></div>
-<div class="section-title">Trading discipline</div>
-<div class="card"><div class="row"><b>Before every trade</b><span class="pill gold">Checklist</span></div>
-<div class="list-item">01 · Check high-impact news and event time.</div><div class="list-item">02 · Confirm 30M structure and swing points.</div><div class="list-item">03 · Apply 75-point and 50% levels correctly.</div><div class="list-item">04 · Wait for 5M confirmation; calculate risk.</div><div class="list-item">05 · Record your reason before entering.</div></div>
+
+<section id="home" class="page active">
+ <div class="hero card">
+  <div class="small teal">WELCOME TO YOUR TRADING DESK</div>
+  <h2>Trade with a plan.<br>Not with emotion.</h2>
+  <p>Monitor markets, check your strategies and prepare disciplined trade plans.</p>
+  <button onclick="go('analyze')">✦ ANALYZE MARKET</button>
+ </div>
+ <div class="row"><h3>Trading overview</h3><span class="small">Manual / chart-assisted</span></div>
+ <div class="grid">
+  <div class="metric"><span class="small">PRIMARY MARKET</span><strong>XAUUSD</strong></div>
+  <div class="metric"><span class="small">PLATFORM</span><strong id="homePlatform">Exness</strong></div>
+  <div class="metric"><span class="small">STRATEGIES</span><strong>02 ACTIVE</strong></div>
+  <div class="metric"><span class="small">AUTO ORDERS</span><strong class="teal">OFF</strong></div>
+ </div>
+ <div class="card">
+  <h3>Market chart</h3>
+  <div class="chart" id="homeChart"></div>
+ </div>
+ <div class="card">
+  <h3>Trading discipline</h3>
+  <div class="check"><input type="checkbox"> <span>Market direction is clear</span></div>
+  <div class="check"><input type="checkbox"> <span>News risk checked</span></div>
+  <div class="check"><input type="checkbox"> <span>Entry confirmation received</span></div>
+  <div class="check"><input type="checkbox"> <span>Stop loss and risk defined</span></div>
+ </div>
 </section>
 
-<section id="scanner" class="screen">
-<div class="eyebrow">Markets</div><h2>Market scanner</h2><p class="lead">Choose a symbol and record what you see on your Exness chart. Live prices will be added after a supported data connection is configured.</p>
-<div class="card"><label>Instrument</label><select id="symbol"><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option><option>GBPJPY</option><option>AUDUSD</option><option>USDCAD</option><option>USDCHF</option></select>
-<label>Current price (optional)</label><input id="price" type="number" step="any" placeholder="Enter price from Exness">
-<label>30M market direction</label><select id="trend"><option value="">Select direction</option><option>Bullish</option><option>Bearish</option><option>Sideways</option></select>
-<label>News risk</label><select id="newsrisk"><option value="">Select news status</option><option>No high-impact event nearby (verified)</option><option>High-impact event approaching</option><option>Unknown / not checked</option></select>
-<button class="btn" style="margin-top:14px" onclick="saveScan()">Save market observation</button></div>
-<div id="scanResult" class="card"><div class="empty">No market observations saved in this session.</div></div>
+<section id="analyze" class="page">
+ <h2>AI Market Analysis</h2><p class="muted">Review both installed strategies before preparing a trade.</p>
+ <div class="card">
+  <label>Trading platform</label>
+  <select id="platform" onchange="document.getElementById('homePlatform').textContent=this.value">
+   <option>Exness</option><option>MetaTrader 5 (MT5)</option>
+  </select>
+  <label>Market instrument</label>
+  <select id="symbol" onchange="loadChart()">
+   <option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>GBPJPY</option><option>USDJPY</option><option>USDCHF</option><option>AUDUSD</option><option>USDCAD</option>
+  </select>
+  <label>Market timeframe</label>
+  <select id="timeframe"><option>30M → 5M</option><option>1H → 15M</option><option>4H → 1H</option><option>15M → 5M</option></select>
+  <button class="full" onclick="analyze()">✦ CHECK BOTH STRATEGIES</button>
+  <div id="analysisResult" class="result">Waiting for your market review. No live AI signal has been generated.</div>
+ </div>
+ <div class="card">
+  <h3>Strategy 01 — XAUUSD Retracement</h3>
+  <p class="small">30M trend → swing levels → 50% midpoint → 5M retest.</p>
+  <h3>Strategy 02 — Candlestick Confirmation</h3>
+  <p class="small">Manual pattern identification and candle-close confirmation.</p>
+ </div>
+ <div class="card"><h3>Market chart</h3><div id="analysisChart" class="chart"></div></div>
 </section>
 
-<section id="strategy" class="screen">
-<div class="eyebrow">Your personal rule engine</div><h2>XAUUSD strategy check</h2><p class="lead">30-minute swing → 75-point inward levels → 50% midpoint → 5-minute confirmation.</p>
-<div class="notice">For XAUUSD quoted to 2 decimals, this prototype treats 75 points as 0.75 in price (75 × 0.01). Confirm this matches your exact Exness symbol specification before relying on it.</div>
-<div class="card">
-<div class="formgrid"><div><label>30M swing high</label><input id="high" type="number" step="0.01" placeholder="e.g. 2400.00"></div><div><label>30M swing low</label><input id="low" type="number" step="0.01" placeholder="e.g. 2380.00"></div></div>
-<label>Current price (optional)</label><input id="current" type="number" step="0.01" placeholder="Price from Exness">
-<label>5M confirmation</label><select id="confirm"><option value="">Not checked</option><option>Confirmed bullish</option><option>Confirmed bearish</option><option>No confirmation</option></select>
-<label>News check</label><select id="strategyNews"><option value="">Not checked</option><option>No high-impact event nearby</option><option>High-impact event nearby</option></select>
-<button class="btn" style="margin-top:14px" onclick="calculate()">Calculate levels</button>
-<div id="levels" class="result" style="display:none"></div>
-</div>
-<div class="card"><b>Rule reminders</b><div class="list-item">• Use a clearly identified 30M swing high and swing low.</div><div class="list-item">• Mark 75 points inward from both ends.</div><div class="list-item">• Midpoint = (swing high + swing low) ÷ 2.</div><div class="list-item">• The app calculates levels; it does not decide that a trade is valid without your full entry rules.</div></div>
-
-<div class="section-title">Strategy 02 · Candlestick patterns</div>
-<p class="lead">Select the candle pattern you see on your chart. Jarvis will explain its usual bias and ask you to check context. This is a manual learning/checking tool, not automatic chart recognition.</p>
-<div class="card">
-<label>Choose candlestick pattern</label>
-<select id="candlePattern">
-<option value="">Select a pattern</option>
-<optgroup label="Bullish / possible upward reversal"><option>Hammer</option><option>Inverted Hammer</option><option>Morning Star</option><option>Bullish Engulfing</option><option>Piercing Line</option><option>Three White Soldiers</option><option>Dragonfly Doji</option></optgroup>
-<optgroup label="Bearish / possible downward reversal"><option>Shooting Star</option><option>Hanging Man</option><option>Evening Star</option><option>Bearish Engulfing</option><option>Dark Cloud Cover</option><option>Three Black Crows</option><option>Gravestone Doji</option></optgroup>
-<optgroup label="Neutral / indecision"><option>Doji</option><option>Spinning Top</option><option>Marubozu</option></optgroup>
-</select>
-<label>Where did the pattern form?</label><select id="candleLocation"><option value="">Select market context</option><option>After a downtrend / near support</option><option>After an uptrend / near resistance</option><option>Inside a sideways range</option><option>Unknown</option></select>
-<label>Has the pattern candle / final pattern candle closed?</label><select id="candleClosed"><option value="">Not checked</option><option>Yes, candle has closed</option><option>No, candle is still forming</option></select>
-<label>Confirmation after the pattern</label><select id="candleConfirm"><option value="">Not checked</option><option>Structure break in expected direction</option><option>Strong follow-through candle</option><option>No confirmation yet</option><option>Confirmation against pattern</option></select>
-<label>Nearby support / resistance</label><select id="candleZone"><option value="">Not checked</option><option>Pattern is at a relevant zone</option><option>No clear nearby zone</option><option>Unknown</option></select>
-<button class="btn" style="margin-top:14px" onclick="checkCandlePattern()">Check candlestick setup</button>
-<div id="candleResult" class="result" style="display:none"></div>
-</div>
-<div class="notice"><b>Important:</b> A candlestick pattern alone is not an entry signal. The same pattern can fail, especially in choppy markets. Wait for a closed candle, location, structure confirmation and a planned stop-loss. Do not treat this checklist as a tested profitable strategy.</div>
+<section id="markets" class="page">
+ <h2>Market Watchlist</h2><p class="muted">Select a market to inspect its TradingView chart.</p>
+ <div class="card">
+  <table><thead><tr><th>SYMBOL</th><th>TYPE</th><th>CHART</th></tr></thead><tbody id="watchlist"></tbody></table>
+ </div>
+ <div class="card"><h3>Live chart provider</h3><div class="chart" id="marketChart"></div><p class="disclaimer">Chart data is supplied by TradingView and may differ from your broker's executable prices.</p></div>
 </section>
 
-<section id="news" class="screen">
-<div class="eyebrow">Fundamental intelligence</div><h2>News & events</h2><p class="lead">News feed is not connected in this starter build.</p>
-<div class="notice">Do not assume there is no news because this screen is empty. Check a trusted economic calendar before trading.</div>
-<div class="card"><b>Events to monitor</b><div class="list-item">USD · CPI / PCE inflation</div><div class="list-item">USD · Nonfarm Payrolls (NFP) / unemployment</div><div class="list-item">USD · Federal Reserve / FOMC decisions</div><div class="list-item">USD · GDP / retail sales</div><div class="list-item">Gold · Central-bank demand and geopolitical developments</div><button class="btn secondary" style="margin-top:12px" onclick="window.open('https://www.forexfactory.com/calendar','_blank')">Open Forex Factory calendar ↗</button></div>
+<section id="strategy" class="page">
+ <h2>Strategy Centre</h2>
+ <div class="card">
+  <h3>01 — XAUUSD 30M → 5M</h3>
+  <p class="small">Enter the swing high and swing low from your chart.</p>
+  <label>Swing high</label><input id="high" type="number" step="0.01" placeholder="e.g. 2750.00">
+  <label>Swing low</label><input id="low" type="number" step="0.01" placeholder="e.g. 2720.00">
+  <label>75-point distance (price units)</label><input id="points" type="number" value="0.75" step="0.01">
+  <p class="disclaimer">0.75 is a provisional interpretation for two-decimal XAUUSD pricing. Verify your Exness symbol's point/tick specification before using it.</p>
+  <button class="full" onclick="levels()">CALCULATE LEVELS</button>
+  <div id="levelsResult" class="result">Your 50% midpoint and inward levels will appear here.</div>
+  <label>30M trend</label><select id="trend"><option value="">Select direction</option><option>BUY — Higher High + Higher Low</option><option>SELL — Lower High + Lower Low</option><option>Unclear — No trade</option></select>
+  <label>5M confirmation</label><select id="confirm"><option>Not confirmed</option><option>Bullish close + retest (BUY)</option><option>Bearish close + retest (SELL)</option></select>
+ </div>
+ <div class="card">
+  <h3>02 — Candlestick checklist</h3>
+  <label>Pattern seen on chart</label>
+  <select id="pattern">
+   <option>Select pattern</option><optgroup label="Bullish">
+   <option>Hammer</option><option>Inverted Hammer</option><option>Morning Star</option><option>Bullish Engulfing</option><option>Piercing Line</option><option>Three White Soldiers</option>
+   </optgroup><optgroup label="Bearish">
+   <option>Shooting Star</option><option>Hanging Man</option><option>Evening Star</option><option>Bearish Engulfing</option><option>Dark Cloud Cover</option><option>Three Black Crows</option>
+   </optgroup><optgroup label="Neutral">
+   <option>Doji</option><option>Spinning Top</option><option>Marubozu</option>
+   </optgroup></select>
+  <div class="check"><input id="atLevel" type="checkbox"><span>Pattern appears at a meaningful support/resistance area</span></div>
+  <div class="check"><input id="closed" type="checkbox"><span>Pattern candle has closed</span></div>
+  <div class="check"><input id="newsChecked" type="checkbox"><span>News risk checked separately</span></div>
+  <button class="full" onclick="patternCheck()">CHECK PATTERN</button>
+  <div id="patternResult" class="result">Waiting for manual chart confirmation.</div>
+ </div>
 </section>
 
-<section id="journal" class="screen">
-<div class="eyebrow">Performance</div><h2>Trade journal</h2><p class="lead">Record demo or completed trades to build evidence about your strategy.</p>
-<div class="card"><label>Market</label><select id="jSymbol"><option>XAUUSD</option><option>EURUSD</option><option>GBPUSD</option><option>GBPJPY</option><option>USDJPY</option></select>
-<div class="formgrid"><div><label>Direction</label><select id="jSide"><option>BUY</option><option>SELL</option></select></div><div><label>Result</label><select id="jResult"><option>Win</option><option>Loss</option><option>Break-even</option></select></div></div>
-<div class="formgrid"><div><label>Entry</label><input id="jEntry" type="number" step="any" placeholder="Entry"></div><div><label>Exit</label><input id="jExit" type="number" step="any" placeholder="Exit"></div></div>
-<label>Reason / notes</label><textarea id="jNotes" rows="2" placeholder="Why did you take this trade?"></textarea><button class="btn" style="margin-top:13px" onclick="addTrade()">Save journal entry</button></div>
-<div class="section-title">Saved trades</div><div id="trades" class="card"><div class="empty">No trades recorded yet.</div></div>
+<section id="news" class="page">
+ <h2>News & Economic Calendar</h2>
+ <div class="card">
+  <h3>Before entering a trade</h3>
+  <p class="muted">Check high-impact events, especially CPI, NFP, FOMC, interest-rate decisions and central-bank speeches.</p>
+  <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">OPEN FOREX FACTORY CALENDAR ↗</a>
+  <p class="disclaimer">This app does not currently fetch or interpret live news automatically. Check event time and currency impact yourself.</p>
+ </div>
 </section>
+
+<section id="journal" class="page">
+ <h2>Trade Journal</h2>
+ <div class="card">
+  <label>Market</label><input id="jSymbol" value="XAUUSD">
+  <label>Direction</label><select id="jDirection"><option>BUY</option><option>SELL</option></select>
+  <label>Entry price</label><input id="jEntry" type="number" step="0.01">
+  <label>Stop loss</label><input id="jSL" type="number" step="0.01">
+  <label>Take profit</label><input id="jTP" type="number" step="0.01">
+  <label>Result / notes</label><input id="jNotes" placeholder="Win, loss, breakeven or notes">
+  <button class="full" onclick="saveTrade()">SAVE TRADE</button>
+ </div>
+ <div class="card"><h3>Saved trades</h3><div id="trades"></div><button class="secondary full" onclick="clearTrades()">CLEAR JOURNAL</button></div>
+</section>
+
 </main>
-<footer>JARVIS TRADER AI · Private personal prototype · Not financial advice</footer>
 <nav>
-<button class="active" data-page="dashboard" onclick="show('dashboard')"><span>⌂</span>Home</button>
-<button data-page="scanner" onclick="show('scanner')"><span>◫</span>Markets</button>
-<button data-page="strategy" onclick="show('strategy')"><span>⌁</span>Strategy</button>
-<button data-page="news" onclick="show('news')"><span>▤</span>News</button>
-<button data-page="journal" onclick="show('journal')"><span>▣</span>Journal</button>
+ <button class="active" data-page="home" onclick="go('home')"><span>⌂</span>HOME</button>
+ <button data-page="analyze" onclick="go('analyze')"><span>✦</span>ANALYZE</button>
+ <button data-page="markets" onclick="go('markets')"><span>◈</span>MARKETS</button>
+ <button data-page="strategy" onclick="go('strategy')"><span>⌁</span>STRATEGY</button>
+ <button data-page="news" onclick="go('news')"><span>▤</span>NEWS</button>
+ <button data-page="journal" onclick="go('journal')"><span>▣</span>JOURNAL</button>
 </nav>
-</div>
+
 <script>
-const $=id=>document.getElementById(id);
-function show(page){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));window.scrollTo(0,0)}
-function saveScan(){let v={symbol:$('symbol').value,price:$('price').value,trend:$('trend').value,news:$('newsrisk').value,time:new Date().toLocaleString()};localStorage.setItem('jta_scan',JSON.stringify(v));$('scanResult').innerHTML=`<b>Last observation</b><div class="list-item">${v.symbol} · ${v.trend||'Direction not selected'}</div><div class="tiny">Price: ${v.price||'Not entered'} · News: ${v.news||'Not checked'} · ${v.time}</div>`}
-function calculate(){let h=Number($('high').value),l=Number($('low').value);if(!h||!l||h<=l){alert('Enter a valid swing high greater than swing low.');return}let inward=0.75,upper=h-inward,lower=l+inward,mid=(h+l)/2,cur=Number($('current').value),conf=$('confirm').value,news=$('strategyNews').value;let status='INCOMPLETE — WAIT';if(conf&&news==='No high-impact event nearby'&&conf!=='No confirmation')status='MANUAL CHECKS PASSED — REVIEW YOUR FULL RULES';if(news==='High-impact event nearby')status='NEWS RISK — WAIT';$('levels').style.display='block';$('levels').innerHTML=`<div class="metric-label">CALCULATED LEVELS · SAMPLE RULE</div><div class="list-item">Upper inward level: <strong>${upper.toFixed(2)}</strong></div><div class="list-item">50% midpoint: <strong>${mid.toFixed(2)}</strong></div><div class="list-item">Lower inward level: <strong>${lower.toFixed(2)}</strong></div><div class="list-item">Current price: <strong>${cur?cur.toFixed(2):'Not entered'}</strong></div><div style="margin-top:10px"><span class="pill gold">${status}</span></div><p class="tiny">5M: ${conf||'Not checked'} · News: ${news||'Not checked'}</p><p class="tiny">These are calculations, not a BUY/SELL signal. Verify the 75-point definition and all strategy conditions.</p>`}
-
-const candleInfo={
-'Hammer':['Bullish possibility','Usually meaningful after a decline, especially near support.'],
-'Inverted Hammer':['Bullish possibility','Can appear after a decline; wait for bullish follow-through.'],
-'Morning Star':['Bullish possibility','Three-candle reversal idea after a decline; the final candle should show buying strength.'],
-'Bullish Engulfing':['Bullish possibility','A bullish body engulfs the prior bearish body; context and close matter.'],
-'Piercing Line':['Bullish possibility','A bullish candle closes well into the previous bearish body after a decline.'],
-'Three White Soldiers':['Bullish momentum possibility','Three consecutive strong bullish candles; avoid chasing after an already extended move.'],
-'Dragonfly Doji':['Possible bullish rejection / indecision','Can matter near support after a decline, but needs confirmation.'],
-'Shooting Star':['Bearish possibility','Usually meaningful after a rise, especially near resistance.'],
-'Hanging Man':['Bearish warning','Appears after an uptrend; bearish confirmation is essential.'],
-'Evening Star':['Bearish possibility','Three-candle reversal idea after a rise; confirm selling pressure.'],
-'Bearish Engulfing':['Bearish possibility','A bearish body engulfs the prior bullish body; context and close matter.'],
-'Dark Cloud Cover':['Bearish possibility','A bearish candle closes deeply into the prior bullish body after a rise.'],
-'Three Black Crows':['Bearish momentum possibility','Three consecutive strong bearish candles; avoid chasing after an extended drop.'],
-'Gravestone Doji':['Possible bearish rejection / indecision','Can matter near resistance after a rise, but needs confirmation.'],
-'Doji':['Neutral / indecision','Open and close are near each other; it does not tell direction by itself.'],
-'Spinning Top':['Neutral / indecision','Small body with wicks suggests hesitation; wait for a break and follow-through.'],
-'Marubozu':['Strong one-sided candle','A large body with little or no wick shows momentum, but late entries can be risky.']};
-function checkCandlePattern(){
- let name=$('candlePattern').value,loc=$('candleLocation').value,closed=$('candleClosed').value,conf=$('candleConfirm').value,zone=$('candleZone').value;
- if(!name){alert('Please choose a candlestick pattern.');return}
- let info=candleInfo[name],bull=info[0].toLowerCase().includes('bullish'),bear=info[0].toLowerCase().includes('bearish');
- let locationOK=(bull&&loc==='After a downtrend / near support')||(bear&&loc==='After an uptrend / near resistance');
- let status='WAIT — CONTEXT OR CONFIRMATION MISSING';
- if(closed==='No, candle is still forming'||conf==='No confirmation yet'||!closed||!conf)status='WAIT — DO NOT ENTER';
- else if(conf==='Confirmation against pattern')status='CONFLICT — AVOID THIS SETUP';
- else if((bull||bear)&&!locationOK)status='WEAK CONTEXT — WAIT';
- else if(closed==='Yes, candle has closed'&&(conf==='Structure break in expected direction'||conf==='Strong follow-through candle')&&zone==='Pattern is at a relevant zone'&&locationOK)status='CHECKLIST ALIGNED — MANUAL REVIEW ONLY';
- else if(!bull&&!bear&&conf!=='No confirmation yet')status='INDECISION — WAIT FOR DIRECTION';
- $('candleResult').style.display='block';
- $('candleResult').innerHTML=`<div class="metric-label">PATTERN REVIEW</div><h3 style="margin:5px 0 8px">${escapeHtml(name)}</h3><div><span class="pill gold">${escapeHtml(info[0])}</span></div><p class="tiny">${escapeHtml(info[1])}</p><div class="list-item">Location: <b>${escapeHtml(loc||'Not checked')}</b></div><div class="list-item">Candle closed: <b>${escapeHtml(closed||'Not checked')}</b></div><div class="list-item">Confirmation: <b>${escapeHtml(conf||'Not checked')}</b></div><div class="list-item">Support/resistance: <b>${escapeHtml(zone||'Not checked')}</b></div><div style="margin-top:12px"><span class="pill ${status.startsWith('CHECKLIST')?'green':status.startsWith('CONFLICT')?'red':'gold'}">${status}</span></div><p class="tiny">This is a rule checklist, not an AI chart scan, verified edge, or BUY/SELL instruction. Plan risk and stop-loss independently.</p>`;
+const symbols=["XAUUSD","EURUSD","GBPUSD","GBPJPY","USDJPY","USDCHF","AUDUSD","USDCAD"];
+function go(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ if(id==="markets")loadChart("marketChart");
+ if(id==="home")loadChart("homeChart");
+ if(id==="analyze")loadChart("analysisChart");
+ if(id==="journal")renderTrades();
 }
-
-function getTrades(){return JSON.parse(localStorage.getItem('jta_trades')||'[]')}
-function renderTrades(){let a=getTrades();$('trades').innerHTML=a.length?a.slice().reverse().map(t=>`<div class="list-item"><div class="row"><b>${t.symbol} ${t.side}</b><span class="pill ${t.result==='Win'?'green':t.result==='Loss'?'red':'gold'}">${t.result}</span></div><div class="tiny">${t.entry||'—'} → ${t.exit||'—'} · ${t.date}</div><div class="tiny">${escapeHtml(t.notes)}</div></div>`).join(''):'<div class="empty">No trades recorded yet.</div>'}
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function addTrade(){let a=getTrades();a.push({symbol:$('jSymbol').value,side:$('jSide').value,result:$('jResult').value,entry:$('jEntry').value,exit:$('jExit').value,notes:$('jNotes').value,date:new Date().toLocaleDateString()});localStorage.setItem('jta_trades',JSON.stringify(a));$('jNotes').value='';renderTrades()}
-if(localStorage.getItem('jta_scan')){let v=JSON.parse(localStorage.getItem('jta_scan'));$('scanResult').innerHTML=`<b>Last observation</b><div class="list-item">${v.symbol} · ${v.trend||'Direction not selected'}</div><div class="tiny">Price: ${v.price||'Not entered'} · News: ${v.news||'Not checked'} · ${v.time}</div>`}
-renderTrades();
-if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+function tvSymbol(s){
+ return s==="XAUUSD"?"OANDA:XAUUSD":"FX:"+s;
+}
+function loadChart(target){
+ const s=document.getElementById("symbol")?.value||"XAUUSD";
+ const el=document.getElementById(target||"analysisChart");
+ if(!el)return;
+ const frame=document.createElement("iframe");
+ frame.title="TradingView "+s;
+ frame.src="https://s.tradingview.com/widgetembed/?symbol="+encodeURIComponent(tvSymbol(s))+"&interval=30&hidesidetoolbar=1&symboledit=1&saveimage=0&toolbarbg=0b1218&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1";
+ frame.style="width:100%;height:100%;border:0";
+ frame.allowFullscreen=true;el.replaceChildren(frame);
+}
+function analyze(){
+ const s=document.getElementById("symbol").value;
+ const p=document.getElementById("platform").value;
+ document.getElementById("analysisResult").innerHTML=
+ "<b class='gold'>MANUAL REVIEW REQUIRED — WAIT</b><br>Platform: "+p+
+ "<br>Market: "+s+"<br>Timeframe: "+document.getElementById("timeframe").value+
+ "<br>Strategy 01: Review trend, swing, midpoint and retest.<br>Strategy 02: Review candle pattern and candle close.<br><br><b>No verified live signal.</b> Connect a supported data source before treating this as automated analysis.";
+ loadChart("analysisChart");
+}
+function levels(){
+ const h=Number(document.getElementById("high").value),l=Number(document.getElementById("low").value),d=Number(document.getElementById("points").value);
+ const out=document.getElementById("levelsResult");
+ if(!h||!l||h<=l||d<=0){out.textContent="Enter a valid swing high, swing low and positive point distance.";return}
+ const mid=(h+l)/2;
+ out.innerHTML="<b class='teal'>CALCULATED LEVELS</b><br>50% midpoint: <b>"+mid.toFixed(2)+"</b><br>Upper inward level (High − distance): <b>"+(h-d).toFixed(2)+"</b><br>Lower inward level (Low + distance): <b>"+(l+d).toFixed(2)+"</b><br>Range: "+(h-l).toFixed(2)+"<br><span class='small'>Calculation only; not an entry signal.</span>";
+}
+function patternCheck(){
+ const p=document.getElementById("pattern").value;
+ const ok=document.getElementById("atLevel").checked&&document.getElementById("closed").checked&&document.getElementById("newsChecked").checked&&p!=="Select pattern";
+ document.getElementById("patternResult").innerHTML=ok?
+ "<b class='teal'>CHECKLIST COMPLETE</b><br>Pattern: "+p+"<br>Manual review still required for trend, context, retest and risk. This is not a verified trade signal.":
+ "<b class='gold'>WAIT — CHECKLIST INCOMPLETE</b><br>Confirm the pattern, candle close, meaningful level and news risk.";
+}
+function getTrades(){try{return JSON.parse(localStorage.getItem("jarvisTrades")||"[]")}catch(e){return []}}
+function saveTrade(){
+ const trade={symbol:document.getElementById("jSymbol").value,direction:document.getElementById("jDirection").value,entry:document.getElementById("jEntry").value,sl:document.getElementById("jSL").value,tp:document.getElementById("jTP").value,notes:document.getElementById("jNotes").value,date:new Date().toLocaleString()};
+ if(!trade.entry||!trade.sl||!trade.tp){alert("Please enter Entry, SL and TP.");return}
+ const a=getTrades();a.unshift(trade);localStorage.setItem("jarvisTrades",JSON.stringify(a));renderTrades();alert("Trade saved on this device.");
+}
+function renderTrades(){
+ const a=getTrades(),el=document.getElementById("trades");
+ el.innerHTML=a.length?a.map(t=>"<div class='result'><b>"+safe(t.symbol)+" "+safe(t.direction)+"</b><br>Entry: "+safe(t.entry)+" | SL: "+safe(t.sl)+" | TP: "+safe(t.tp)+"<br>"+safe(t.notes)+"<br><span class='small'>"+safe(t.date)+"</span></div>").join(""):"<p class='muted'>No journal entries yet.</p>";
+}
+function safe(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function clearTrades(){if(confirm("Delete all saved journal entries?")){localStorage.removeItem("jarvisTrades");renderTrades()}}
+document.getElementById("watchlist").innerHTML=symbols.map(s=>"<tr><td><b>"+s+"</b></td><td>"+(s==="XAUUSD"?"GOLD":"FOREX")+"</td><td><a href='#' onclick=\"document.getElementById('symbol').value='"+s+"';go('markets');loadChart('marketChart');return false\">OPEN ↗</a></td></tr>").join("");
+loadChart("homeChart");renderTrades();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
-</body></html>
+</body>
+</html>
