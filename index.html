@@ -342,82 +342,256 @@ async function jarvisGetCandles(symbol,interval) {
   return candles;
 }
 
+
+function jarvisPivots(cs, left=2, right=2) {
+  const highs=[], lows=[];
+
+  for(let i=left; i<cs.length-right; i++) {
+    let isHigh=true, isLow=true;
+
+    for(let j=i-left; j<=i+right; j++) {
+      if(j===i) continue;
+      if(cs[j].high>=cs[i].high) isHigh=false;
+      if(cs[j].low<=cs[i].low) isLow=false;
+    }
+
+    if(isHigh) highs.push({index:i, price:cs[i].high});
+    if(isLow) lows.push({index:i, price:cs[i].low});
+  }
+
+  return {highs, lows};
+}
+
+function jarvisSwingBias(cs) {
+  const p=jarvisPivots(cs);
+  const h=p.highs.slice(-2);
+  const l=p.lows.slice(-2);
+
+  if(h.length<2 || l.length<2)
+    return {bias:"UNCLEAR", pivots:p};
+
+  const hh=h[1].price>h[0].price;
+  const hl=l[1].price>l[0].price;
+  const lh=h[1].price<h[0].price;
+  const ll=l[1].price<l[0].price;
+
+  return {
+    bias:hh&&hl?"BUY":lh&&ll?"SELL":"UNCLEAR",
+    pivots:p
+  };
+}
+
 async function analyze() {
   const symbol=document.getElementById("symbol").value;
   const result=document.getElementById("analysisResult");
-  result.textContent="JARVIS: collecting market candles and calculating indicators...";
+
+  result.textContent="JARVIS: scanning 30M and 5M markets...";
 
   try {
-    const [raw30,raw5]=await Promise.all([
+    const data=await Promise.all([
       jarvisGetCandles(symbol,"30min"),
       jarvisGetCandles(symbol,"5min")
     ]);
 
-    // Exclude the newest candle because it may still be forming.
-    const c30=raw30.slice(0,-1);
-    const c5=raw5.slice(0,-1);
+    const c30=data[0].slice(0,-1);
+    const c5=data[1].slice(0,-1);
 
     const closes=c30.map(c=>c.close);
-    const e50=jarvisEMA(closes,50);
-    const e200=jarvisEMA(closes,200);
-    const rv=jarvisRSI(closes,14);
-    const av=jarvisATR(c30,14);
+
+    const ema50=jarvisEMA(closes,50);
+    const ema200=jarvisEMA(closes,200);
+    const rsi=jarvisRSI(closes,14);
+    const atr=jarvisATR(c30,14);
 
     const last30=c30[c30.length-1];
     const last5=c5[c5.length-1];
     const prev5=c5[c5.length-2];
 
-    const trend=e50>e200 && last30.close>e50 ? "BUY" :
-      e50<e200 && last30.close<e50 ? "SELL" : "UNCLEAR";
+    const trend=
+      ema50>ema200 && last30.close>ema50 ? "BUY" :
+      ema50<ema200 && last30.close<ema50 ? "SELL" : "UNCLEAR";
 
     const pattern=jarvisPattern(last5,prev5);
     const structure=jarvisStructure(c30);
 
-    const structureBias=structure.includes("bullish") ||
-      structure.includes("sell-side") ? "BUY" :
-      structure.includes("bearish") ||
-      structure.includes("buy-side") ? "SELL" : "UNCLEAR";
+    const structureBias=
+      structure.includes("bullish") || structure.includes("sell-side") ? "BUY" :
+      structure.includes("bearish") || structure.includes("buy-side") ? "SELL" :
+      "UNCLEAR";
 
-    const indicatorBias=trend==="BUY" && rv>50 ? "BUY" :
-      trend==="SELL" && rv<50 ? "SELL" : "MIXED";
+    const indicatorBias=
+      trend==="BUY" && rsi>50 ? "BUY" :
+      trend==="SELL" && rsi<50 ? "SELL" : "MIXED";
 
-    const patternBias=["Hammer","Bullish Engulfing"].includes(pattern) ? "BUY" :
-      ["Shooting Star","Bearish Engulfing"].includes(pattern) ? "SELL" : "UNCLEAR";
+    const patternBias=
+      ["Hammer","Bullish Engulfing"].includes(pattern) ? "BUY" :
+      ["Shooting Star","Bearish Engulfing"].includes(pattern) ? "SELL" :
+      "UNCLEAR";
 
-    const fmt=n=>n===null?"N/A":Number(n).toFixed(3);
-    const technicalAgreement=trend!=="UNCLEAR" &&
-      trend===structureBias && trend===indicatorBias;
+    const fmt=n=>Number.isFinite(n)?n.toFixed(3):"N/A";
 
-    result.innerHTML=`
-      <b class="teal">JARVIS TECHNICAL SCAN COMPLETE</b>
-      <br>Market: <b>${safe(symbol)}</b>
-      <br>Data received: 30M + 5M
-      <br>Closed 30M candles: ${c30.length}
-      <br>Closed 5M candles: ${c5.length}
-      <br><br><b>STRATEGY 01 — TREND</b>
-      <br>EMA 50: ${fmt(e50)}
-      <br>EMA 200: ${fmt(e200)}
-      <br>30M close: ${fmt(last30.close)}
-      <br>Trend: <b>${trend}</b>
-      <br><br><b>STRATEGY 02 — CANDLE CHECK</b>
-      <br>Last completed 5M pattern: ${safe(pattern)}
-      <br>Pattern direction: ${patternBias}
-      <br>5M close: ${fmt(last5.close)}
-      <br><br><b>SMC-STYLE STRUCTURE</b>
-      <br>${safe(structure)}
-      <br>Structure bias: ${structureBias}
-      <br><small>Heuristic candle analysis, not verified institutional order flow.</small>
-      <br><br><b>INDICATORS</b>
-      <br>RSI 14: ${fmt(rv)}
-      <br>ATR 14: ${fmt(av)}
-      <br>Indicator bias: ${indicatorBias}
-      <br><br><b>TECHNICAL AGREEMENT</b>
-      <br>${technicalAgreement?"Technical checks aligned":"Technical checks not aligned"}
-      <br><br><b class="gold">FINAL DECISION: WAIT</b>
-      <br>News is not automatically connected. The 5M retest, entry trigger and news clearance still require verification. No trade signal or order has been generated.
-    `;
+    result.innerHTML=
+      "<b class='teal'>JARVIS TECHNICAL SCAN COMPLETE</b>"+
+      "<br>Market: "+safe(symbol)+
+      "<br>Closed 30M candles: "+c30.length+
+      "<br>Closed 5M candles: "+c5.length+
+      "<br><br><b>EMA TREND</b>"+
+      "<br>EMA 50: "+fmt(ema50)+
+      "<br>EMA 200: "+fmt(ema200)+
+      "<br>30M close: "+fmt(last30.close)+
+      "<br>Trend: <b>"+trend+"</b>"+
+      "<br><br><b>5M CANDLE PATTERN</b>"+
+      "<br>"+safe(pattern)+" — "+patternBias+
+      "<br>5M close: "+fmt(last5.close)+
+      "<br><br><b>SMC-STYLE STRUCTURE</b>"+
+      "<br>"+safe(structure)+
+      "<br>Bias: "+structureBias+
+      "<br><small>Heuristic candle analysis, not verified institutional order flow.</small>"+
+      "<br><br><b>INDICATORS</b>"+
+      "<br>RSI 14: "+fmt(rsi)+
+      "<br>ATR 14: "+fmt(atr)+
+      "<br>Bias: "+indicatorBias+
+      "<br><br><b>DECISION: WAIT</b>"+
+      "<br>Technical checks are not an automatic entry signal.";
+
+    // Custom swing strategy applies to XAUUSD only.
+    if(symbol!=="XAUUSD") {
+      result.innerHTML+="<br><br><b>Gold setup engine:</b> Select XAUUSD to use its custom 30M → 5M strategy.";
+      return;
+    }
+
+    const swing=jarvisSwingBias(c30);
+    const bias=swing.bias;
+    const pivots=swing.pivots;
+
+    const highPivot=pivots.highs.slice(-1)[0];
+    const lowPivot=pivots.lows.slice(-1)[0];
+
+    // Provisional interpretation: 75 points = 0.75 price units.
+    const buffer=0.75;
+
+    let status="WAIT — 30M structure unclear.";
+    let details="Need confirmed Higher High + Higher Low or Lower High + Lower Low.";
+
+    if(bias!=="UNCLEAR" && highPivot && lowPivot) {
+
+      const correctOrder=
+        bias==="BUY"
+          ? lowPivot.index<highPivot.index
+          : highPivot.index<lowPivot.index;
+
+      if(correctOrder) {
+
+        const swingLow=lowPivot.price;
+        const swingHigh=highPivot.price;
+        const range=swingHigh-swingLow;
+        const midpoint=(swingHigh+swingLow)/2;
+
+        const lowerBoundary=swingLow+buffer;
+        const upperBoundary=swingHigh-buffer;
+
+        const validRange=range>2*buffer;
+
+        const insideZone=
+          validRange &&
+          last5.close>=lowerBoundary &&
+          last5.close<=upperBoundary;
+
+        const beyondMidpoint=
+          bias==="BUY"
+            ? last5.close>midpoint
+            : last5.close<midpoint;
+
+        const fiveMinPivots=jarvisPivots(c5);
+
+        const stopPivot=
+          bias==="BUY"
+            ? fiveMinPivots.lows.slice(-1)[0]
+            : fiveMinPivots.highs.slice(-1)[0];
+
+        const stopLoss=stopPivot ? stopPivot.price : null;
+
+        const risk=
+          stopLoss===null ? null :
+          bias==="BUY" ? last5.close-stopLoss :
+          stopLoss-last5.close;
+
+        const retestTolerance=
+          Math.max((jarvisATR(c5,14)||0)*0.25,0.05);
+
+        const retestConfirmed=
+          bias==="BUY"
+            ? prev5.low<=midpoint+retestTolerance &&
+              last5.close>midpoint &&
+              last5.close>last5.open
+            : prev5.high>=midpoint-retestTolerance &&
+              last5.close<midpoint &&
+              last5.close<last5.open;
+
+        const patternConfirmed=patternBias===bias;
+
+        if(!validRange)
+          status="WAIT — swing range too narrow.";
+        else if(!insideZone)
+          status="WAIT — price outside inward zone.";
+        else if(!beyondMidpoint)
+          status="WAIT — no 5M close beyond midpoint.";
+        else if(!retestConfirmed)
+          status="WAIT — 5M retest not confirmed.";
+        else if(!patternConfirmed)
+          status="WAIT — candle pattern does not confirm.";
+        else
+          status="SETUP CANDIDATE — manual checks required.";
+
+        details=
+          "<br>30M swing direction: <b>"+bias+"</b>"+
+          "<br>Swing low: "+swingLow.toFixed(2)+
+          "<br>Swing high: "+swingHigh.toFixed(2)+
+          "<br>50% midpoint: <b>"+midpoint.toFixed(2)+"</b>"+
+          "<br>Lower inward boundary: "+lowerBoundary.toFixed(2)+
+          "<br>Upper inward boundary: "+upperBoundary.toFixed(2)+
+          "<br>Current 5M close: "+last5.close.toFixed(2)+
+          "<br>Inside zone: "+(insideZone?"YES":"NO")+
+          "<br>Beyond midpoint: "+(beyondMidpoint?"YES":"NO")+
+          "<br>5M retest: "+(retestConfirmed?"YES":"NO")+
+          "<br>Candle agrees: "+(patternConfirmed?"YES":"NO");
+
+        if(Number.isFinite(stopLoss) && risk>0) {
+          details+=
+            "<br>Structural 5M SL reference: "+stopLoss.toFixed(2)+
+            "<br>Risk distance: "+risk.toFixed(2)+
+            "<br>Illustrative 1R target: "+
+            (bias==="BUY"?last5.close+risk:last5.close-risk).toFixed(2)+
+            "<br>Illustrative 2R target: "+
+            (bias==="BUY"?last5.close+2*risk:last5.close-2*risk).toFixed(2);
+        } else {
+          details+="<br>SL unavailable — no target calculated.";
+        }
+
+      } else {
+        status="WAIT — swing sequence not confirmed.";
+      }
+    }
+
+    let panel=document.getElementById("goldSetup");
+
+    if(!panel) {
+      panel=document.createElement("div");
+      panel.id="goldSetup";
+      panel.className="result";
+      result.parentNode.appendChild(panel);
+    }
+
+    panel.innerHTML=
+      "<b class='"+(status.startsWith("SETUP")?"teal":"gold")+"'>"+
+      status+"</b>"+details+
+      "<br><br><b>NEWS: NOT CHECKED</b>"+
+      "<br>News is not connected. Manual news and risk review are still required."+
+      "<br><small>75 points are provisionally interpreted as 0.75 price units. Verify the Exness contract specification. Targets are illustrative only. No orders are placed.</small>";
+
   } catch(error) {
-    result.innerHTML="<b class='red'>ANALYSIS ERROR</b><br>"+safe(error.message);
+    result.innerHTML=
+      "<b class='red'>ANALYSIS ERROR</b><br>"+safe(error.message);
   }
 }
 
