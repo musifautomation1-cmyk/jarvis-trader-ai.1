@@ -245,16 +245,56 @@ function loadChart(target){
  frame.style="width:100%;height:100%;border:0";
  frame.allowFullscreen=true;el.replaceChildren(frame);
 }
-function analyze(){
- const s=document.getElementById("symbol").value;
- const p=document.getElementById("platform").value;
- document.getElementById("analysisResult").innerHTML=
- "<b class='gold'>READY FOR TRIPLE CHECK — WAIT</b><br>"+
- "Platform: "+safe(p)+"<br>Market: "+safe(s)+
- "<br>Fill Strategy, SMC and Indicator observations, then run Triple Confirmation."+
- "<br><b>Live broker data is not connected yet.</b>";
- document.getElementById("tripleResult").textContent="Waiting for your chart observations.";
- loadChart("analysisChart");
+
+async function analyze(){
+  const s = document.getElementById("symbol").value;
+  const p = document.getElementById("platform").value;
+  const result = document.getElementById("analysisResult");
+
+  result.textContent = "Connecting to JARVIS live market data...";
+
+  loadChart("analysisChart");
+
+  try {
+    const api = "https://jarvis-trader-api.musifautomation1.workers.dev/candles"
+      + "?symbol=" + encodeURIComponent(s)
+      + "&interval=30min&outputsize=100";
+
+    const response = await fetch(api, { cache: "no-store" });
+    const data = await response.json();
+
+    if (!response.ok || !Array.isArray(data.values) || !data.values.length) {
+      throw new Error(data.error || "Market data unavailable");
+    }
+
+    const candles = data.values;
+    const latest = candles[0];
+    const previous = candles[1];
+
+    const close = Number(latest.close);
+    const previousClose = Number(previous.close);
+    const change = close - previousClose;
+    const direction = change > 0 ? "Bullish" : change < 0 ? "Bearish" : "Neutral";
+
+    result.innerHTML =
+      "<b class='teal'>LIVE DATA RECEIVED</b><br>" +
+      "Platform: " + safe(p) + "<br>" +
+      "Market: " + safe(s) + "<br>" +
+      "Timeframe: 30 Minutes<br>" +
+      "Latest candle: " + safe(latest.datetime) + "<br>" +
+      "Open: " + Number(latest.open).toFixed(2) +
+      " | High: " + Number(latest.high).toFixed(2) +
+      "<br>Low: " + Number(latest.low).toFixed(2) +
+      " | Close: " + close.toFixed(2) +
+      "<br>Previous candle change: " + change.toFixed(2) +
+      "<br>Recent candle direction: " + direction +
+      "<br><br><b class='gold'>TRADE DECISION: WAIT</b>" +
+      "<br>Live candles received. Strategy, SMC, indicators and news confirmation are not yet automated.";
+
+  } catch (error) {
+    result.innerHTML =
+      "<b class='red'>DATA CONNECTION ERROR</b><br>" + safe(error.message);
+  }
 }
 
 function runTripleCheck(){
