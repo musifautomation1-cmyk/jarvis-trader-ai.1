@@ -480,9 +480,13 @@ async function analyze() {
       jarvisGetNews(symbol)
     ]);
 
- const news = if (news.unavailable) {
-  throw new Error("NEWS UNAVAILABLE — TRADE BLOCKED. Check economic calendar feed.");
-} jarvisNewsAssessment(newsData, symbol);
+const news = jarvisNewsAssessment(newsData, symbol);
+
+if (news.unavailable) {
+  throw new Error(
+    "NEWS UNAVAILABLE — TRADE BLOCKED. Check economic calendar feed."
+  );
+}
 
     const c30 = raw30.slice(0, -1);
     const c5 = raw5.slice(0, -1);
