@@ -1,11 +1,11 @@
 {
-  "name": "JARVIS TRADER AI",
-  "short_name": "JARVIS Trader",
+  "name": "MUSIF TRADER AI",
+  "short_name": "MUSIF AI",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#080d14",
-  "theme_color": "#080d14",
-  "description": "Personal trading analysis workstation",
+  "background_color": "#050608",
+  "theme_color": "#050608",
+  "description": "MUSIF TRADER AI - Personal Trading Intelligence",
   "icons": [
     {
       "src": "icon-192.png",
