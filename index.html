@@ -1448,5 +1448,162 @@ function calculateRisk(){
     "Estimated position size: <b>"+estimatedLots.toFixed(3)+" lots</b><br>" +
     "<small>Do not use this lot size until the contract-size and account-currency assumptions are verified for your exact Exness symbol.</small>";
 }
+</script><script>
+/* MUSIF TRADER AI — FINAL NAVIGATION + MARKET PROTECTION */
+(function(){
+
+  const fxPairs = [
+    "EURUSD","GBPUSD","GBPJPY","USDJPY",
+    "USDCHF","AUDUSD","USDCAD"
+  ];
+
+  function fxMarketOpen(){
+    const now = new Date();
+    const day = now.getUTCDay();
+    const time = now.getUTCHours()*60 + now.getUTCMinutes();
+
+    // Exness standard FX schedule: Sunday 21:05 GMT
+    // to Friday 20:59 GMT.
+    if(day === 6) return false;
+    if(day === 0) return time >= 21*60+5;
+    if(day === 5) return time < 20*60+59;
+    return true;
+  }
+
+  function updateMarketStatus(){
+    const status = document.querySelector("header .status");
+    if(!status) return;
+
+    status.textContent = fxMarketOpen()
+      ? "● FX MARKET OPEN"
+      : "● FX MARKET CLOSED";
+  }
+
+  // Create NEWS page if missing
+  if(!document.getElementById("news")){
+    const page = document.createElement("section");
+    page.id = "news";
+    page.className = "page";
+    page.innerHTML = `
+      <h2>NEWS PROTECTION</h2>
+      <div class="card">
+        <h3 class="gold">ECONOMIC NEWS MONITOR</h3>
+        <p>JARVIS checks economic news before analysis.</p>
+        <div class="result">
+          <b class="red">HIGH IMPACT</b>
+          <p>Fresh trade signals blocked.</p>
+          <b class="gold">MEDIUM IMPACT</b>
+          <p>WAIT — extra caution.</p>
+          <b>NEWS UNAVAILABLE</b>
+          <p>WAIT until news can be verified.</p>
+        </div>
+        <a href="https://www.forexfactory.com/calendar"
+           target="_blank" rel="noopener">
+          OPEN ECONOMIC CALENDAR ↗
+        </a>
+      </div>`;
+    document.querySelector("main").appendChild(page);
+  }
+
+  // Create useful RISK page
+  if(!document.getElementById("riskCalculator")){
+    const page = document.createElement("section");
+    page.id = "riskCalculator";
+    page.className = "page";
+    page.innerHTML = `
+      <h2>RISK MANAGEMENT</h2>
+      <div class="card">
+        <h3 class="gold">TRADE RISK CALCULATOR</h3>
+        <label>Account balance ($)</label>
+        <input id="musifBalance" type="number" min="0" placeholder="1000">
+        <label>Risk percentage</label>
+        <input id="musifRisk" type="number" min="0.01" max="5" step="0.01" value="1">
+        <button class="full" id="musifCalc">CALCULATE RISK</button>
+        <div id="musifRiskResult" class="result">
+          Enter your balance and risk percentage.
+        </div>
+      </div>`;
+    document.querySelector("main").appendChild(page);
+
+    document.getElementById("musifCalc").onclick = function(){
+      const balance = Number(document.getElementById("musifBalance").value);
+      const percent = Number(document.getElementById("musifRisk").value);
+      const out = document.getElementById("musifRiskResult");
+
+      if(!Number.isFinite(balance) || !Number.isFinite(percent) ||
+         balance <= 0 || percent <= 0 || percent > 5){
+        out.textContent = "Enter a valid balance and risk between 0 and 5%.";
+        return;
+      }
+
+      out.innerHTML =
+        "<b class='gold'>MAXIMUM PLANNED RISK</b><br>" +
+        "$" + (balance*percent/100).toFixed(2) +
+        "<br><small>Money-risk estimate only. Lot size requires verified instrument contract specifications.</small>";
+    };
+  }
+
+  // Replace broken navigation and remove useless ACCOUNT button
+  const nav = document.querySelector("nav");
+  nav.innerHTML = `
+    <button data-page="home" onclick="go('home')"><span>⌂</span>HOME</button>
+    <button data-page="analyze" onclick="go('analyze')"><span>✦</span>ANALYZE</button>
+    <button data-page="markets" onclick="go('markets')"><span>◈</span>MARKETS</button>
+    <button data-page="news" onclick="go('news')"><span>▤</span>NEWS</button>
+    <button data-page="journal" onclick="go('journal')"><span>▣</span>JOURNAL</button>
+    <button data-page="riskCalculator" onclick="go('riskCalculator')"><span>◎</span>RISK</button>
+  `;
+
+  // Safe page navigation
+  window.go = function(id){
+    const page = document.getElementById(id);
+    if(!page) return;
+
+    document.querySelectorAll(".page").forEach(p=>{
+      p.classList.remove("active");
+    });
+    page.classList.add("active");
+
+    document.querySelectorAll("nav button").forEach(b=>{
+      b.classList.toggle("active", b.dataset.page === id);
+    });
+
+    if(id === "home" && typeof loadChart === "function") loadChart("homeChart");
+    if(id === "markets" && typeof loadChart === "function") loadChart("marketChart");
+    if(id === "analyze" && typeof loadChart === "function") loadChart("analysisChart");
+    if(id === "journal" && typeof renderTrades === "function") renderTrades();
+  };
+
+  // Stop analysis when Forex is closed
+  const previousAnalyze = window.analyze;
+
+  if(typeof previousAnalyze === "function"){
+    window.analyze = async function(){
+      const symbol = document.getElementById("symbol")?.value;
+      const result = document.getElementById("analysisResult");
+
+      if(fxPairs.includes(symbol) && !fxMarketOpen()){
+        result.innerHTML = `
+          <div class="signal-card wait">
+            <div class="signal-word">MARKET CLOSED</div>
+            <b>FINAL DECISION: WAIT</b>
+            <p>Forex market is closed for the weekend.</p>
+            <p>No BUY or SELL signal will be issued.</p>
+            <p>Check again after the market reopens.</p>
+          </div>`;
+        updateMarketStatus();
+        return;
+      }
+
+      return previousAnalyze.apply(this, arguments);
+    };
+  }
+
+  updateMarketStatus();
+  setInterval(updateMarketStatus, 60000);
+
+  window.musifFxMarketStatus = fxMarketOpen;
+
+})();
 </script></body>
 </html>
