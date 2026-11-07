@@ -1488,10 +1488,11 @@ function calculateRisk(){
 /* MUSIF TRADER AI — FINAL NAVIGATION + MARKET PROTECTION */
 (function(){
 
-  const fxPairs = [
-    "EURUSD","GBPUSD","GBPJPY","USDJPY",
-    "USDCHF","AUDUSD","USDCAD"
-  ];
+  const weekendMarkets = [
+  "EURUSD","GBPUSD","GBPJPY","USDJPY",
+  "USDCHF","AUDUSD","USDCAD","XAUUSD","XAGUSD"
+];
+const cryptoMarkets = ["BTCUSD","ETHUSD"];
 
   function fxMarketOpen(){
     const now = new Date();
@@ -1625,16 +1626,18 @@ function calculateRisk(){
     window.analyze = async function(){
       const symbol = document.getElementById("symbol")?.value;
       const result = document.getElementById("analysisResult");
-      if (!jarvisMarketStatus()) {
+   // Crypto markets run 24/7. Only Forex and metals close on weekends.
+if(weekendMarkets.includes(symbol) && !fxMarketOpen()){
   result.innerHTML = `
-    <h2>🔴 MARKET CLOSED</h2>
-    <p>Forex and Gold market is currently closed for the weekend.</p>
-    <p>Market normally reopens Sunday at 5:00 PM New York time.</p>
-    <p>No trading signals available.</p>
-  `;
+    <div class="signal-card wait">
+      <div class="signal-word">MARKET CLOSED</div>
+      <b>FINAL DECISION: WAIT</b>
+      <p>This market is closed for the weekend.</p>
+      <p>No BUY or SELL signal will be issued.</p>
+    </div>`;
+  updateMarketStatus();
   return;
 }
-
       if(fxPairs.includes(symbol) && !fxMarketOpen()){
         result.innerHTML = `
           <div class="signal-card wait">
