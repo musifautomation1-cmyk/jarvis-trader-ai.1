@@ -61,7 +61,7 @@ a{color:var(--teal)}
  <div class="grid">
   <div class="metric"><span class="small">PRIMARY MARKET</span><strong>XAUUSD</strong></div>
   <div class="metric"><span class="small">PLATFORM</span><strong id="homePlatform">Exness</strong></div>
-  <div class="metric"><span class="small">STRATEGIES</span><strong>01 ACTIVE</strong></div>
+  <div class="metric"><span class="small">STRATEGIES</span><strong>02 ACTIVE</strong></div>
   <div class="metric"><span class="small">AUTO ORDERS</span><strong class="teal">OFF</strong></div>
  </div>
  <div class="card">
@@ -78,7 +78,7 @@ a{color:var(--teal)}
 </section>
 
 <section id="analyze" class="page">
-  <h2>JARVIS AI — ONE STRATEGY ENGINE</h2>
+  <h2>JARVIS AI — TWO STRATEGY ENGINE</h2>
   <p class="muted">One strategy. Four steps. Automatic AI confirmation.</p>
   <div class="card">
     <label>Trading platform</label>
@@ -230,9 +230,14 @@ TradingView display chart. JARVIS analysis uses Twelve Data, not a direct Exness
     <p class="disclaimer">The current code applies its own pivot and price-buffer calculations. Verify the calculated levels against your exact Exness symbol specifications before any manual trade.</p>
   </div>
   <div class="card">
-    <h3 class="gold">STRATEGY 02 — NOT CONFIGURED</h3>
-    <p>Strategy 2 is not active yet. Its exact entry, exit, timeframe and confirmation rules have not been supplied, so it is not included in the signal engine.</p>
-    <div class="result">Status: <b class="gold">AWAITING YOUR RULES</b><br>No second-strategy signal or combined confirmation is being generated.</div>
+    <h3 class="gold">STRATEGY 02 — CANDLE + STRUCTURE CONFIRMATION</h3>
+    <p class="muted">ACTIVE — Checks closed 5M candlestick patterns, 30M trend, support/resistance and 5M market structure.</p>
+  <div class="result">
+<b class="teal">STATUS: ACTIVE IN ANALYSIS ENGINE</b><br>
+BUY: Bullish pattern + bullish trend + support + bullish structure.<br>
+SELL: Bearish pattern + bearish trend + resistance + bearish structure.<br>
+Otherwise: WAIT.
+</div>
   </div>
   <div class="card">
     <h3>ANALYSIS ENGINE STATUS</h3>
