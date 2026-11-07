@@ -472,10 +472,41 @@ async function jarvisGetNews(symbol) {
   };
 }
 
-async function analyze() {
+function jarvisMarketStatus() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date());
+
+  const get = type => parts.find(p => p.type === type)?.value;
+  const day = get("weekday");
+  const hour = Number(get("hour"));
+
+  if (
+    day === "Sat" ||
+    day === "Sun" && hour < 17 ||
+    day === "Fri" && hour >= 17
+  ) {
+    return false;
+  }
+
+  return true;
+}async function analyze() {
   const symbol = document.getElementById("symbol").value;
   const platform = document.getElementById("platform").value;
   const result = document.getElementById("analysisResult");
+ if (!jarvisMarketStatus()) {
+  result.innerHTML = `
+    <h2>🔴 MARKET CLOSED</h2>
+    <p>Forex and Gold market is currently closed for the weekend.</p>
+    <p>Market normally reopens Sunday at 5:00 PM New York time.</p>
+    <p>No trading signals available.</p>
+  `;
+  return;
+}
 
   result.innerHTML = "MUSIF AI is analysing both strategies, indicators and news...";
 
