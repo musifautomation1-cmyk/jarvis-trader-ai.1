@@ -498,15 +498,7 @@ function jarvisMarketStatus() {
   const symbol = document.getElementById("symbol").value;
   const platform = document.getElementById("platform").value;
   const result = document.getElementById("analysisResult");
- if (!jarvisMarketStatus()) {
-  result.innerHTML = `
-    <h2>🔴 MARKET CLOSED</h2>
-    <p>Forex and Gold market is currently closed for the weekend.</p>
-    <p>Market normally reopens Sunday at 5:00 PM New York time.</p>
-    <p>No trading signals available.</p>
-  `;
-  return;
-}
+
 
   result.innerHTML = "MUSIF AI is analysing both strategies, indicators and news...";
 
@@ -1628,6 +1620,15 @@ function calculateRisk(){
     window.analyze = async function(){
       const symbol = document.getElementById("symbol")?.value;
       const result = document.getElementById("analysisResult");
+      if (!jarvisMarketStatus()) {
+  result.innerHTML = `
+    <h2>🔴 MARKET CLOSED</h2>
+    <p>Forex and Gold market is currently closed for the weekend.</p>
+    <p>Market normally reopens Sunday at 5:00 PM New York time.</p>
+    <p>No trading signals available.</p>
+  `;
+  return;
+}
 
       if(fxPairs.includes(symbol) && !fxMarketOpen()){
         result.innerHTML = `
